@@ -88,6 +88,22 @@ st.markdown("""
             border: 1px solid #00ffcc;
             box-shadow: 0 0 3px #00ffcc;
         }
+
+        /* Footer untuk copyright */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #111111;
+            color: #e0ffe0;
+            text-align: center;
+            padding: 1em;
+            font-size: 0.9em;
+            font-style: italic;
+            border-top: 1px solid #00ffcc;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -181,3 +197,10 @@ if uploaded_files and st.button("🚀 Proses Data"):
             st.download_button("⬇️ Download sampah CSV", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
         else:
             st.warning("Tidak ada data valid yang bisa diproses.")
+
+# Footer untuk copyright
+st.markdown("""
+    <div class="footer">
+        &copy; 2025 - Dibuat oleh Operator Gabut
+    </div>
+""", unsafe_allow_html=True)
