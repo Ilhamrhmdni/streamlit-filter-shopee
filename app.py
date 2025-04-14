@@ -204,9 +204,9 @@ if uploaded_files and st.button("🚀 Proses Data"):
 
             with col2:
             st.markdown("""
-            <div class="footer" style="text-align: right;">
-                © dibuat oleh operator gabut
-            </div>
+                <div class="footer" style="text-align: right;">
+                    © dibuat oleh operator gabut
+                </div>
             """, unsafe_allow_html=True)
 
             st.download_button("⬇️ Download sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
