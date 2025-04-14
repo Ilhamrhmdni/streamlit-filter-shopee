@@ -61,9 +61,9 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.sidebar.title("🏍️ Filter Produk Shopee")
+st.sidebar.title("🚬 Marlboro Filter Black")
 
-st.markdown("Upload file mentahan (.txt) dan atur kriteria filter untuk memproses produk.")
+st.markdown("Dibuat dengan ngasal oleh operator gabut :)")
 
 # Form input parameter filter
 stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
