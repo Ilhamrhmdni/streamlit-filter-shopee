@@ -1,0 +1,11 @@
+# Mengabaikan folder atau file tertentu
+*.log          # Mengabaikan semua file dengan ekstensi .log
+*.pyc          # Mengabaikan file Python bytecode
+node_modules/  # Mengabaikan folder node_modules
+__pycache__/   # Mengabaikan folder __pycache__
+
+# Mengabaikan folder dan file sistem
+AppData/
+Desktop/
+Documents/
+Downloads/
