@@ -188,6 +188,6 @@ if show_feedback:
 # === FOOTER ===
 st.markdown("""
     <div class="footer">
-        &copy; 2025 - Dibuat oleh Banyak Orang
+        &copy; 2025 - Dibuat oleh Wong Sukses
     </div>
 """, unsafe_allow_html=True)
