@@ -5,33 +5,17 @@ import io
 # === CUSTOM CSS STYLE ===
 st.markdown("""
     <style>
-        /* Animasi glow pelan-pelan */
         @keyframes neonGlow {
-            0% {
-                box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
-            }
-            50% {
-                box-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
-            }
-            100% {
-                box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
-            }
+            0% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
         }
 
-        /* Animasi perubahan warna frame */
         @keyframes colorChange {
-            0% {
-                border-color: #00ffcc;  /* Biru */
-            }
-            33% {
-                border-color: #800080;  /* Ungu */
-            }
-            66% {
-                border-color: #ff0000;  /* Merah */
-            }
-            100% {
-                border-color: #00ffcc;  /* Kembali ke Biru */
-            }
+            0% { border-color: #00ffcc; }
+            33% { border-color: #800080; }
+            66% { border-color: #ff0000; }
+            100% { border-color: #00ffcc; }
         }
 
         body {
@@ -54,13 +38,13 @@ st.markdown("""
             text-shadow: 0 0 3px #00ffcc;
         }
         .stat-box {
-            background-color: #333333;  /* Warna abu-abu tua */
+            background-color: #333333;
             padding: 1em;
             border-radius: 10px;
             margin-bottom: 1em;
-            border: 3px solid #00ffcc;  /* Warna awal biru */
+            border: 3px solid #00ffcc;
             color: #e0ffe0;
-            animation: neonGlow 3s ease-in-out infinite, colorChange 6s infinite;  /* Menambahkan animasi perubahan warna */
+            animation: neonGlow 3s ease-in-out infinite, colorChange 6s infinite;
         }
         .stat-box ul {
             padding-left: 1.2em;
@@ -88,8 +72,6 @@ st.markdown("""
             border: 1px solid #00ffcc;
             box-shadow: 0 0 3px #00ffcc;
         }
-
-        /* Footer untuk copyright */
         .footer {
             position: fixed;
             bottom: 0;
@@ -152,6 +134,7 @@ def apply_filters(df):
         (df['Komisi(Rp)'] >= komisi_rp_min)
     ]
 
+# === PROSES DATA ===
 if uploaded_files and st.button("🚀 Proses Data"):
     with st.spinner("⏳ Memproses data..."):
         combined_df = pd.DataFrame()
@@ -172,7 +155,6 @@ if uploaded_files and st.button("🚀 Proses Data"):
 
             st.success("✅ Data berhasil diproses!")
 
-            # === KOTAK STATISTIK DENGAN FRAME NEON BERUBAH WARNA ===
             st.markdown(f"""
             <div class="stat-box">
                 <div class="section-title">📊 Statistik</div>
@@ -196,23 +178,16 @@ if uploaded_files and st.button("🚀 Proses Data"):
         else:
             st.warning("Tidak ada data valid yang bisa diproses.")
 
-        # === FOOTER & KRITIK/SARAN ===
-        show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
+# === FEEDBACK SECTION ===
+show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
+if show_feedback:
+    feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
+    if st.button("Kirim"):
+        st.success("🎉 Terima kasih atas masukannya!")
 
-        col1, col2 = st.columns([2, 2])
-
-        with col1:
-            if show_feedback:
-                feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
-                if st.button("Kirim"):
-                    st.success("🎉 Terima kasih atas masukannya!")
-
-        with col2:
-            st.markdown("""
-                <div class="footer">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>💬 Klik untuk beri masukan</span>
-                        <span>&copy; 2025 - Dibuat oleh operator gabut</span>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+# === FOOTER ===
+st.markdown("""
+    <div class="footer">
+        &copy; 2025 - Dibuat oleh Banyak Orang
+    </div>
+""", unsafe_allow_html=True)
