@@ -151,9 +151,6 @@ def apply_filters(df):
         (df['Komisi(Rp)'] >= komisi_rp_min)
     ]
 
-# === MAIN APP ===
-st.markdown("Upload file mentahan (.txt) dan atur kriteria filter untuk memproses produk.")
-
 if uploaded_files and st.button("🚀 Proses Data"):
     with st.spinner("⏳ Memproses data..."):
         combined_df = pd.DataFrame()
