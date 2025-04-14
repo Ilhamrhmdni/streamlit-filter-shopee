@@ -18,6 +18,22 @@ st.markdown("""
             }
         }
 
+        /* Animasi perubahan warna frame */
+        @keyframes colorChange {
+            0% {
+                border-color: #00ffcc;  /* Biru */
+            }
+            33% {
+                border-color: #800080;  /* Ungu */
+            }
+            66% {
+                border-color: #ff0000;  /* Merah */
+            }
+            100% {
+                border-color: #00ffcc;  /* Kembali ke Biru */
+            }
+        }
+
         body {
             background-color: #111111;
             color: #e0ffe0;
@@ -38,13 +54,13 @@ st.markdown("""
             text-shadow: 0 0 3px #00ffcc;
         }
         .stat-box {
-            background-color: #222;
+            background-color: #333333;  /* Warna abu-abu tua */
             padding: 1em;
             border-radius: 10px;
             margin-bottom: 1em;
-            border: 1px solid #00ffcc;
+            border: 3px solid #00ffcc;  /* Warna awal biru */
             color: #e0ffe0;
-            animation: neonGlow 3s ease-in-out infinite;
+            animation: neonGlow 3s ease-in-out infinite, colorChange 6s infinite;  /* Menambahkan animasi perubahan warna */
         }
         .stat-box ul {
             padding-left: 1.2em;
@@ -142,7 +158,7 @@ if uploaded_files and st.button("🚀 Proses Data"):
 
             st.success("✅ Data berhasil diproses!")
 
-            # === KOTAK STATISTIK DENGAN FRAME NEON RINGAN ===
+            # === KOTAK STATISTIK DENGAN FRAME NEON BERUBAH WARNA ===
             st.markdown(f"""
             <div class="stat-box">
                 <div class="section-title">📊 Statistik</div>
