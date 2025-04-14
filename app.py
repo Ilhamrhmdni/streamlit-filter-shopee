@@ -196,23 +196,23 @@ if uploaded_files and st.button("🚀 Proses Data"):
         else:
             st.warning("Tidak ada data valid yang bisa diproses.")
 
-# === FOOTER & KRITIK/SARAN ===
-show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
+        # === FOOTER & KRITIK/SARAN ===
+        show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
 
-col1, col2 = st.columns([2, 2])
+        col1, col2 = st.columns([2, 2])
 
-with col1:
-    if show_feedback:
-        feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
-        if st.button("Kirim"):
-            st.success("🎉 Terima kasih atas masukannya!")
+        with col1:
+            if show_feedback:
+                feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
+                if st.button("Kirim"):
+                    st.success("🎉 Terima kasih atas masukannya!")
 
-with col2:
-    st.markdown("""
-        <div class="footer">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>💬 Klik untuk beri masukan</span>
-                <span>&copy; 2025 - Dibuat oleh operator gabut</span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+        with col2:
+            st.markdown("""
+                <div class="footer">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>💬 Klik untuk beri masukan</span>
+                        <span>&copy; 2025 - Dibuat oleh operator gabut</span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
