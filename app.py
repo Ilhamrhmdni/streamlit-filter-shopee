@@ -110,23 +110,6 @@ st.markdown("""
 # === SIDEBAR ===
 st.sidebar.title("🚬 Marlboro Filter Black")
 
-# Kritik & Saran
-st.sidebar.markdown("---")
-st.sidebar.subheader("💬 Kritik & Saran")
-
-kritik = st.sidebar.text_area("Tulis di sini...", placeholder="Ketik kritik atau saran kamu...", height=150)
-if st.sidebar.button("Kirim"):
-    if kritik.strip():
-        st.sidebar.success("Terima kasih atas masukannya! 🙏")
-        st.markdown(f"""
-        <div class="stat-box">
-            <div class="section-title">💡 Masukan dari Pengguna</div>
-            <p>{kritik}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.sidebar.warning("Masukan tidak boleh kosong.")
-
 stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
 terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=5)
 harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=10000.0)
@@ -209,6 +192,23 @@ if uploaded_files and st.button("🚀 Proses Data"):
 
             st.subheader("🗑️ Produk Dihapus")
             st.dataframe(removed_df)
+            # Footer layout
+            show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
+
+            col1, col2 = st.columns([2, 2])
+            with col1:
+                if show_feedback:
+                    feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
+                    if st.button("Kirim"):
+                        st.success("🎉 Terima kasih atas masukannya!")
+
+            with col2:
+            st.markdown("""
+            <div class="footer" style="text-align: right;">
+                © dibuat oleh operator gabut
+            </div>
+            """, unsafe_allow_html=True)
+
             st.download_button("⬇️ Download sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
         else:
             st.warning("Tidak ada data valid yang bisa diproses.")
