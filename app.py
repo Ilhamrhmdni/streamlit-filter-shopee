@@ -136,17 +136,17 @@ if uploaded_files and st.button("🚀 Proses Data"):
             st.success("✅ Data berhasil diproses!")
 
             st.markdown(f"""
-<div class="stat-box">
-    <div class="section-title">📊 Statistik</div>
-    <ul>
-        <li>Total produk diproses: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{total_links}</strong></li>
-        <li>Produk unik setelah hapus duplikat: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(combined_df)}</strong></li>
-        <li>Produk lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(filtered_df)}</strong></li>
-        <li>Produk tidak lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(removed_df)}</strong></li>
-        <li>Duplikat yang dihapus: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{deleted_dupes}</strong></li>
-    </ul>
-</div>
-""", unsafe_allow_html=True)
+            <div class="stat-box">
+                <div class="section-title">📊 Statistik</div>
+                <ul>
+                        <li>Total produk diproses: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{total_links}</strong></li>
+                        <li>Produk unik setelah hapus duplikat: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(combined_df)}</strong></li>
+                        <li>Produk lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(filtered_df)}</strong></li>
+                        <li>Produk tidak lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(removed_df)}</strong></li>
+                        <li>Duplikat yang dihapus: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{deleted_dupes}</strong></li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
 
 
             st.subheader("✅ Produk Lolos Filter")
