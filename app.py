@@ -13,9 +13,9 @@ st.markdown("""
 
         @keyframes colorChange {
             0% { border-color: #00ffcc; }
-            33% { border-color: #800080; }
-            66% { border-color: #ff0000; }
-            100% { border-color: #00ffcc; }
+            33% { border-color: #B026FF; }
+            66% { border-color: #FF073A; }
+            100% { border-color: #39FF14; }
         }
 
         body {
