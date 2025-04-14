@@ -73,7 +73,7 @@ st.markdown("""
             box-shadow: 0 0 3px #00ffcc;
         }
         .footer {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
