@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 
-# === CUSTOM STYLING ===
+# === CUSTOM CSS ===
 st.markdown("""
     <style>
         body {
@@ -61,7 +61,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === SIDEBAR INPUT ===
+# === SIDEBAR ===
 st.sidebar.title("🏍️ Filter Produk Shopee")
 stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
 terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=5)
@@ -71,23 +71,18 @@ komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0
 
 uploaded_files = st.file_uploader("📁 Upload file mentahan (.txt)", type=["txt"], accept_multiple_files=True)
 
-# === FUNGSI MODULAR ===
-
+# === UTILITY FUNCTIONS ===
 def read_and_validate_file(uploaded_file):
     try:
         content = uploaded_file.read().decode('utf-8')
         df = pd.read_csv(io.StringIO(content), delimiter='\t', on_bad_lines='skip')
         df['source_file'] = uploaded_file.name
-
         if 'Link Produk' not in df.columns:
             df['Link Produk'] = 'Link tidak tersedia'
-
-        required_columns = ['Harga', 'Stock', 'Terjual(Bulanan)', 'Komisi(%)', 'Komisi(Rp)']
-        for col in required_columns:
+        for col in ['Harga', 'Stock', 'Terjual(Bulanan)', 'Komisi(%)', 'Komisi(Rp)']:
             if col not in df.columns:
-                st.warning(f"Kolom '{col}' tidak ada di {uploaded_file.name}, akan diisi default 0.")
+                st.warning(f"Kolom '{col}' tidak ditemukan di {uploaded_file.name}, akan diisi 0.")
                 df[col] = 0
-
         return df
     except Exception as e:
         st.error(f"Gagal membaca {uploaded_file.name}: {e}")
@@ -110,8 +105,7 @@ def apply_filters(df):
         (df['Komisi(Rp)'] >= komisi_rp_min)
     ]
 
-# === MAIN LOGIC ===
-
+# === MAIN APP ===
 st.markdown("Upload file mentahan (.txt) dan atur kriteria filter untuk memproses produk.")
 
 if uploaded_files and st.button("🚀 Proses Data"):
@@ -132,22 +126,21 @@ if uploaded_files and st.button("🚀 Proses Data"):
             filtered_df = apply_filters(combined_df)
             removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
-            # === OUTPUT UI ===
             st.success("✅ Data berhasil diproses!")
 
+            # === GLOWING STATISTICS ===
             st.markdown(f"""
             <div class="stat-box">
                 <div class="section-title">📊 Statistik</div>
                 <ul>
-                        <li>Total produk diproses: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{total_links}</strong></li>
-                        <li>Produk unik setelah hapus duplikat: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(combined_df)}</strong></li>
-                        <li>Produk lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(filtered_df)}</strong></li>
-                        <li>Produk tidak lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(removed_df)}</strong></li>
-                        <li>Duplikat yang dihapus: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{deleted_dupes}</strong></li>
-                    </ul>
-                </div>
-                """, unsafe_allow_html=True)
-
+                    <li>Total produk diproses: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{total_links}</strong></li>
+                    <li>Produk unik setelah hapus duplikat: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(combined_df)}</strong></li>
+                    <li>Produk lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(filtered_df)}</strong></li>
+                    <li>Produk tidak lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(removed_df)}</strong></li>
+                    <li>Duplikat yang dihapus: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{deleted_dupes}</strong></li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
 
             st.subheader("✅ Produk Lolos Filter")
             st.dataframe(filtered_df)
