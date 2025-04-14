@@ -195,20 +195,24 @@ if uploaded_files and st.button("🚀 Proses Data"):
             st.download_button("⬇️ Download sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
         else:
             st.warning("Tidak ada data valid yang bisa diproses.")
-# Footer layout
-            show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
 
-            col1, col2 = st.columns([2, 2])
-            with col1:
-                if show_feedback:
-                    feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
-                    if st.button("Kirim"):
-                        st.success("🎉 Terima kasih atas masukannya!")
+# === FOOTER & KRITIK/SARAN ===
+show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
 
-            with col2:
-# Footer untuk copyright
-st.markdown("""
-    <div class="footer">
-        &copy; 2025 - Dibuat oleh Banyak Orang
-    </div>
-""", unsafe_allow_html=True)
+col1, col2 = st.columns([2, 2])
+
+with col1:
+    if show_feedback:
+        feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
+        if st.button("Kirim"):
+            st.success("🎉 Terima kasih atas masukannya!")
+
+with col2:
+    st.markdown("""
+        <div class="footer">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>💬 Klik untuk beri masukan</span>
+                <span>&copy; 2025 - Dibuat oleh operator gabut</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
