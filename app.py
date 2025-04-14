@@ -152,7 +152,7 @@ def apply_filters(df):
     ]
 
 # === MAIN APP ===
-st.markdown("Upload file mentahan (.txt) dan atur kriteria filter untuk memproses produk.")
+st.sidebar("Upload file mentahan (.txt) dan atur kriteria filter untuk memproses produk.")
 
 if uploaded_files and st.button("🚀 Proses Data"):
     with st.spinner("⏳ Memproses data..."):
