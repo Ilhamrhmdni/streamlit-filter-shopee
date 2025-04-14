@@ -198,6 +198,6 @@ if uploaded_files and st.button("🚀 Proses Data"):
 # Footer untuk copyright
 st.markdown("""
     <div class="footer">
-        &copy; 2025 - Dibuat oleh Gang Dholly
+        &copy; 2025 - Dibuat oleh Banyak Orang
     </div>
 """, unsafe_allow_html=True)
