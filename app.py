@@ -2,9 +2,22 @@ import streamlit as st
 import pandas as pd
 import io
 
-# === CUSTOM CSS ===
+# === CUSTOM CSS STYLE ===
 st.markdown("""
     <style>
+        /* Animasi glow pelan-pelan */
+        @keyframes neonGlow {
+            0% {
+                box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+            }
+        }
+
         body {
             background-color: #111111;
             color: #e0ffe0;
@@ -27,11 +40,17 @@ st.markdown("""
         .stat-box {
             background-color: #222;
             padding: 1em;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-bottom: 1em;
             border: 1px solid #00ffcc;
             color: #e0ffe0;
-            box-shadow: 0 0 5px #00ffcc;
+            animation: neonGlow 3s ease-in-out infinite;
+        }
+        .stat-box ul {
+            padding-left: 1.2em;
+        }
+        .stat-box li {
+            margin-bottom: 0.4em;
         }
         .stButton>button {
             background-color: #00ffcc;
@@ -52,11 +71,6 @@ st.markdown("""
             color: #e0ffe0;
             border: 1px solid #00ffcc;
             box-shadow: 0 0 3px #00ffcc;
-        }
-        .footer {
-            margin-top: 2em;
-            font-size: 0.9em;
-            color: gray;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -128,16 +142,16 @@ if uploaded_files and st.button("🚀 Proses Data"):
 
             st.success("✅ Data berhasil diproses!")
 
-            # === GLOWING STATISTICS ===
+            # === KOTAK STATISTIK DENGAN FRAME NEON RINGAN ===
             st.markdown(f"""
             <div class="stat-box">
                 <div class="section-title">📊 Statistik</div>
                 <ul>
-                    <li>Total produk diproses: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{total_links}</strong></li>
-                    <li>Produk unik setelah hapus duplikat: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(combined_df)}</strong></li>
-                    <li>Produk lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(filtered_df)}</strong></li>
-                    <li>Produk tidak lolos filter: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{len(removed_df)}</strong></li>
-                    <li>Duplikat yang dihapus: <strong style="color:#00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;">{deleted_dupes}</strong></li>
+                    <li>Total produk diproses: <strong>{total_links}</strong></li>
+                    <li>Produk unik setelah hapus duplikat: <strong>{len(combined_df)}</strong></li>
+                    <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
+                    <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
+                    <li>Duplikat yang dihapus: <strong>{deleted_dupes}</strong></li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
