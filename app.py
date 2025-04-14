@@ -5,17 +5,33 @@ import io
 # === CUSTOM CSS STYLE ===
 st.markdown("""
     <style>
+        /* Animasi glow pelan-pelan */
         @keyframes neonGlow {
-            0% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
-            50% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
-            100% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
+            0% {
+                box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+            }
         }
 
+        /* Animasi perubahan warna frame */
         @keyframes colorChange {
-            0% { border-color: #00ffcc; }
-            33% { border-color: #800080; }
-            66% { border-color: #ff0000; }
-            100% { border-color: #00ffcc; }
+            0% {
+                border-color: #00ffcc;  /* Biru */
+            }
+            33% {
+                border-color: #800080;  /* Ungu */
+            }
+            66% {
+                border-color: #ff0000;  /* Merah */
+            }
+            100% {
+                border-color: #00ffcc;  /* Kembali ke Biru */
+            }
         }
 
         body {
@@ -38,13 +54,13 @@ st.markdown("""
             text-shadow: 0 0 3px #00ffcc;
         }
         .stat-box {
-            background-color: #333333;
+            background-color: #333333;  /* Warna abu-abu tua */
             padding: 1em;
             border-radius: 10px;
             margin-bottom: 1em;
-            border: 3px solid #00ffcc;
+            border: 3px solid #00ffcc;  /* Warna awal biru */
             color: #e0ffe0;
-            animation: neonGlow 3s ease-in-out infinite, colorChange 6s infinite;
+            animation: neonGlow 3s ease-in-out infinite, colorChange 6s infinite;  /* Menambahkan animasi perubahan warna */
         }
         .stat-box ul {
             padding-left: 1.2em;
@@ -72,6 +88,8 @@ st.markdown("""
             border: 1px solid #00ffcc;
             box-shadow: 0 0 3px #00ffcc;
         }
+
+        /* Footer untuk copyright */
         .footer {
             position: fixed;
             bottom: 0;
@@ -134,7 +152,6 @@ def apply_filters(df):
         (df['Komisi(Rp)'] >= komisi_rp_min)
     ]
 
-# === PROSES DATA ===
 if uploaded_files and st.button("🚀 Proses Data"):
     with st.spinner("⏳ Memproses data..."):
         combined_df = pd.DataFrame()
@@ -155,37 +172,56 @@ if uploaded_files and st.button("🚀 Proses Data"):
 
             st.success("✅ Data berhasil diproses!")
 
+            # === STATISTIK RINCI ===
+            produk_duplikat = combined_df[combined_df.duplicated(subset=['Link Produk'], keep=False)]
+            produk_stok_kurang = combined_df[combined_df['Stock'] < stok_min]
+            produk_harga_kurang = combined_df[combined_df['Harga'] < harga_min]
+            produk_terjual_kurang = combined_df[combined_df['Terjual(Bulanan)'] < terjual_min]
+            produk_komisi_kurang = combined_df[combined_df['Komisi(Rp)'] < komisi_rp_min]
+
+            # Menampilkan statistik rinci
             st.markdown(f"""
             <div class="stat-box">
-                <div class="section-title">📊 Statistik</div>
-                <ul>
-                    <li>Total produk diproses: <strong>{total_links}</strong></li>
-                    <li>Produk unik setelah hapus duplikat: <strong>{len(combined_df)}</strong></li>
-                    <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
-                    <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
-                    <li>Duplikat yang dihapus: <strong>{deleted_dupes}</strong></li>
-                </ul>
+                <div class="section-title">📊 Statistik Rinci</div>
+                <table style="width:100%; color:#e0ffe0;">
+                    <tr>
+                        <td><strong>Total produk diproses</strong></td>
+                        <td><strong>{total_links}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Produk duplikat yang dihapus</strong></td>
+                        <td><strong>{len(produk_duplikat)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Produk dengan stok kurang dari batas</strong></td>
+                        <td><strong>{len(produk_stok_kurang)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Produk dengan harga kurang dari batas</strong></td>
+                        <td><strong>{len(produk_harga_kurang)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Produk dengan terjual bulanan kurang dari batas</strong></td>
+                        <td><strong>{len(produk_terjual_kurang)}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Produk dengan komisi kurang dari batas</strong></td>
+                        <td><strong>{len(produk_komisi_kurang)}</strong></td>
+                    </tr>
+                </table>
             </div>
             """, unsafe_allow_html=True)
 
-            st.subheader("✅ Final Produk")
-            st.dataframe(filtered_df)
-            st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
+            st.subheader("🗑️ Produk yang Tidak Lolos Filter")
+            produk_tidak_lolos = pd.concat([produk_duplikat, produk_stok_kurang, produk_harga_kurang, produk_terjual_kurang, produk_komisi_kurang]).drop_duplicates()
+            st.dataframe(produk_tidak_lolos)
 
-            st.subheader("🗑️ Produk Dihapus")
-            st.dataframe(removed_df)
-            st.download_button("⬇️ Download sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
+            # --- Download produk yang tidak lolos filter ---
+            st.download_button("⬇️ Download Produk Tidak Lolos Filter", produk_tidak_lolos.to_csv(index=False).encode('utf-8'), file_name="produk_tidak_lolos.csv", mime='text/csv')
         else:
             st.warning("Tidak ada data valid yang bisa diproses.")
 
-# === FEEDBACK SECTION ===
-show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
-if show_feedback:
-    feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
-    if st.button("Kirim"):
-        st.success("🎉 Terima kasih atas masukannya!")
-
-# === FOOTER ===
+# Footer layout
 st.markdown("""
     <div class="footer">
         &copy; 2025 - Dibuat oleh Banyak Orang
