@@ -108,14 +108,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === SIDEBAR ===
-st.sidebar.title("🏍️ Filter Produk Shopee")
+st.sidebar.title("🚬 Marlboro Filter Black")
 stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
 terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=5)
 harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=10000.0)
 komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=2.0)
 komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=200.0)
 
-uploaded_files = st.file_uploader("📁 Upload file mentahan (.txt)", type=["txt"], accept_multiple_files=True)
+uploaded_files = st.file_uploader("Masukan File Format (.txt)", type=["txt"], accept_multiple_files=True)
 
 # === UTILITY FUNCTIONS ===
 def read_and_validate_file(uploaded_file):
@@ -185,19 +185,19 @@ if uploaded_files and st.button("🚀 Proses Data"):
             </div>
             """, unsafe_allow_html=True)
 
-            st.subheader("✅ Produk Lolos Filter")
+            st.subheader("✅ Final Produk")
             st.dataframe(filtered_df)
-            st.download_button("⬇️ Download hasil CSV", filtered_df.to_csv(index=False).encode('utf-8'), file_name="hasil_filter.csv", mime='text/csv')
+            st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
 
             st.subheader("🗑️ Produk Dihapus")
             st.dataframe(removed_df)
-            st.download_button("⬇️ Download sampah CSV", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
+            st.download_button("⬇️ Download sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
         else:
             st.warning("Tidak ada data valid yang bisa diproses.")
 
 # Footer untuk copyright
 st.markdown("""
     <div class="footer">
-        &copy; 2025 - Dibuat oleh Operator Gabut
+        &copy; 2025 - Dibuat oleh Gang Dholly
     </div>
 """, unsafe_allow_html=True)
