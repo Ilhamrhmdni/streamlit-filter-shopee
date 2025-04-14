@@ -186,7 +186,7 @@ if show_feedback:
         st.success("🎉 Terima kasih atas masukannya!")
 
 # === FOOTER ===
-st.markdown("""
+st.sidebar("""
     <div class="footer">
         &copy; 2025 - Dibuat oleh Wong Sukses
     </div>
