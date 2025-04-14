@@ -192,7 +192,10 @@ if uploaded_files and st.button("🚀 Proses Data"):
 
             st.subheader("🗑️ Produk Dihapus")
             st.dataframe(removed_df)
-            # Footer layout
+            st.download_button("⬇️ Download sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
+        else:
+            st.warning("Tidak ada data valid yang bisa diproses.")
+# Footer layout
             show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
 
             col1, col2 = st.columns([2, 2])
@@ -203,16 +206,6 @@ if uploaded_files and st.button("🚀 Proses Data"):
                         st.success("🎉 Terima kasih atas masukannya!")
 
             with col2:
-            st.markdown("""
-                <div class="footer" style="text-align: right;">
-                    © dibuat oleh operator gabut
-                </div>
-            """, unsafe_allow_html=True)
-
-            st.download_button("⬇️ Download sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
-        else:
-            st.warning("Tidak ada data valid yang bisa diproses.")
-
 # Footer untuk copyright
 st.markdown("""
     <div class="footer">
