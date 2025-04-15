@@ -10,153 +10,93 @@ theme_mode = st.sidebar.selectbox("🎨 Pilih Gaya Visual", ["Neon", "Soft Dark"
 # === CSS untuk mode Neon dan Soft Dark ===
 neon_css = """
     <style>
-        @keyframes neonGlow {
-            0% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
-            50% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
-            100% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
+        html, body, .reportview-container, .main, .block-container {
+            background-color: #0d0d0d !important;
+            color: #e0ffe0 !important;
         }
-        @keyframes colorChange {
-            0% { border-color: #00ffcc; }
-            33% { border-color: #B026FF; }
-            66% { border-color: #FF073A; }
-            100% { border-color: #39FF14; }
-        }
-        body {
-            background-color: #111;
-            color: #e0ffe0;
-        }
-        .reportview-container .main .block-container {
-            background-color: #111;
-            color: #e0ffe0;
-        }
-        .sidebar .sidebar-content {
-            background-color: #1a1a1a;
+        .sidebar-content {
+            background-color: #1a1a1a !important;
+            color: #e0ffe0 !important;
         }
         .section-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
             color: #00ffcc;
             text-shadow: 0 0 3px #00ffcc;
         }
         .stat-box {
-            background-color: #333;
-            padding: 1em;
-            border-radius: 10px;
-            margin-bottom: 1em;
+            background-color: #222;
             border: 3px solid #00ffcc;
-            color: #e0ffe0;
-            animation: neonGlow 3s ease-in-out infinite, colorChange 6s infinite;
+            box-shadow: 0 0 10px #00ffcc;
         }
-        .stat-box ul { padding-left: 1.2em; }
-        .stat-box li { margin-bottom: 0.4em; }
         .stButton>button {
             background-color: #00ffcc;
             color: black;
-            border: none;
-            padding: 0.5em 1em;
-            border-radius: 4px;
-            font-weight: bold;
-            box-shadow: 0 0 5px #00ffcc;
-            transition: 0.3s ease;
+            box-shadow: 0 0 8px #00ffcc;
         }
         .stButton>button:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 8px #00ffcc;
+            background-color: #1affd5;
         }
         .stTextInput>div>input, .stNumberInput>div>input {
-            background-color: #222;
-            color: #e0ffe0;
+            background-color: #222 !important;
+            color: #e0ffe0 !important;
             border: 1px solid #00ffcc;
-            box-shadow: 0 0 3px #00ffcc;
         }
         .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
             background-color: #111;
-            color: #e0ffe0;
+            color: #00ffcc;
+            border-top: 1px solid #00ffcc;
             text-align: center;
             padding: 1em;
             font-size: 0.9em;
-            font-style: italic;
-            border-top: 1px solid #00ffcc;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
         }
     </style>
 """
 
 soft_dark_css = """
     <style>
-        body {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
+        html, body, .reportview-container, .main, .block-container {
+            background-color: #1e1e1e !important;
+            color: #e0e0e0 !important;
         }
-        .reportview-container .main .block-container {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-        }
-        .sidebar .sidebar-content {
-            background-color: #2a2a2a;
+        .sidebar-content {
+            background-color: #2a2a2a !important;
+            color: #e0e0e0 !important;
         }
         .section-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
             color: #99ddff;
         }
         .stat-box {
             background-color: #333;
-            padding: 1em;
-            border-radius: 10px;
-            margin-bottom: 1em;
             border: 1px solid #99ddff;
-            color: #e0e0e0;
         }
-        .stat-box ul { padding-left: 1.2em; }
-        .stat-box li { margin-bottom: 0.4em; }
         .stButton>button {
             background-color: #99ddff;
             color: black;
-            border: none;
-            padding: 0.5em 1em;
-            border-radius: 4px;
-            font-weight: bold;
         }
         .stButton>button:hover {
             transform: scale(1.05);
+            background-color: #bce6ff;
         }
         .stTextInput>div>input, .stNumberInput>div>input {
-            background-color: #2e2e2e;
-            color: #e0e0e0;
+            background-color: #2e2e2e !important;
+            color: #e0e0e0 !important;
             border: 1px solid #99ddff;
         }
         .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
             background-color: #1e1e1e;
             color: #ccc;
+            border-top: 1px solid #99ddff;
             text-align: center;
             padding: 1em;
             font-size: 0.9em;
-            font-style: italic;
-            border-top: 1px solid #99ddff;
         }
     </style>
 """
 
 # === APPLY THEME ===
-if theme_mode == "Neon":
-    st.markdown(neon_css, unsafe_allow_html=True)
-else:
-    st.markdown(soft_dark_css, unsafe_allow_html=True)
+st.markdown(neon_css if theme_mode == "Neon" else soft_dark_css, unsafe_allow_html=True)
 
-# === INPUT FILTER DI SIDEBAR ===
+# === SIDEBAR FILTER ===
 st.sidebar.title("🚬 Marlboro Filter Black")
 stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
 terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=5)
@@ -166,7 +106,7 @@ komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0
 
 uploaded_files = st.file_uploader("Masukan File Format (.txt)", type=["txt"], accept_multiple_files=True)
 
-# === FUNGSI PEMBACAAN DAN FILTER ===
+# === FUNCTION UNTUK PROSES DATA ===
 def read_and_validate_file(uploaded_file):
     try:
         content = uploaded_file.read().decode('utf-8')
@@ -200,7 +140,7 @@ def apply_filters(df):
         (df['Komisi(Rp)'] >= komisi_rp_min)
     ]
 
-# === PROSES DATA ===
+# === MAIN ===
 if uploaded_files and st.button("🚀 Proses Data"):
     with st.spinner("⏳ Memproses data..."):
         combined_df = pd.DataFrame()
@@ -245,8 +185,7 @@ if uploaded_files and st.button("🚀 Proses Data"):
             st.warning("Tidak ada data valid yang bisa diproses.")
 
 # === FEEDBACK SECTION ===
-show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
-if show_feedback:
+if st.checkbox("💬 Kritik & Saran", value=False):
     feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
     if st.button("Kirim"):
         st.success("🎉 Terima kasih atas masukannya!")
