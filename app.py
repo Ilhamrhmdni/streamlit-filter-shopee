@@ -2,22 +2,24 @@ import streamlit as st
 import pandas as pd
 import io
 
-# === CUSTOM CSS STYLE ===
-st.markdown("""
+# === MODE TAMPILAN ===
+theme_mode = st.sidebar.selectbox("🎨 Mode Tampilan", ["Neon", "Soft Dark"])
+
+# === CSS DYNAMIC ===
+if theme_mode == "Neon":
+    custom_css = """
     <style>
         @keyframes neonGlow {
             0% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
             50% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
             100% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
         }
-
         @keyframes colorChange {
             0% { border-color: #00ffcc; }
             33% { border-color: #B026FF; }
             66% { border-color: #FF073A; }
             100% { border-color: #39FF14; }
         }
-
         body {
             background-color: #111111;
             color: #e0ffe0;
@@ -46,31 +48,40 @@ st.markdown("""
             color: #e0ffe0;
             animation: neonGlow 3s ease-in-out infinite, colorChange 6s infinite;
         }
-        .stat-box ul {
-            padding-left: 1.2em;
+        .stat-box:hover {
+            transform: scale(1.02);
+            transition: 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.9);
         }
-        .stat-box li {
-            margin-bottom: 0.4em;
+        .stat-box strong {
+            color: #39FF14;
+            text-shadow: 0 0 5px #39FF14;
         }
-        .stButton>button {
-            background-color: #00ffcc;
-            color: black;
-            border: none;
+        .stDownloadButton > button {
+            background-color: transparent;
+            border: 2px solid #00ffcc;
+            color: #00ffcc;
             padding: 0.5em 1em;
-            border-radius: 4px;
+            border-radius: 5px;
             font-weight: bold;
             box-shadow: 0 0 5px #00ffcc;
-            transition: 0.3s ease;
+            transition: 0.3s ease-in-out;
         }
-        .stButton>button:hover {
+        .stDownloadButton > button:hover {
+            background-color: #00ffcc;
+            color: black;
             transform: scale(1.05);
-            box-shadow: 0 0 8px #00ffcc;
+            box-shadow: 0 0 10px #00ffcc;
         }
-        .stTextInput>div>input, .stNumberInput>div>input {
+        .stTextInput>div>input, .stNumberInput>div>input, .stTextArea textarea {
             background-color: #222;
             color: #e0ffe0;
             border: 1px solid #00ffcc;
             box-shadow: 0 0 3px #00ffcc;
+        }
+        .stCheckbox > label {
+            color: #00ffcc;
+            font-weight: bold;
         }
         .footer {
             position: fixed;
@@ -87,9 +98,79 @@ st.markdown("""
             box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
         }
     </style>
-""", unsafe_allow_html=True)
+    """
+else:
+    custom_css = """
+    <style>
+        body {
+            background-color: #1c1c1c;
+            color: #f0f0f0;
+        }
+        .reportview-container .main .block-container {
+            background-color: #1c1c1c;
+            color: #f0f0f0;
+        }
+        .sidebar .sidebar-content {
+            background-color: #2a2a2a;
+        }
+        .section-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            color: #00c8ff;
+        }
+        .stat-box {
+            background-color: #2f2f2f;
+            padding: 1em;
+            border-radius: 10px;
+            margin-bottom: 1em;
+            border-left: 5px solid #00c8ff;
+            color: #f0f0f0;
+        }
+        .stat-box strong {
+            color: #00c8ff;
+        }
+        .stDownloadButton > button {
+            background-color: #00c8ff;
+            color: black;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+            font-weight: bold;
+            border: none;
+        }
+        .stDownloadButton > button:hover {
+            background-color: #00a2cc;
+            transform: scale(1.03);
+        }
+        .stTextInput>div>input, .stNumberInput>div>input, .stTextArea textarea {
+            background-color: #2a2a2a;
+            color: #f0f0f0;
+            border: 1px solid #00c8ff;
+        }
+        .stCheckbox > label {
+            color: #00c8ff;
+            font-weight: bold;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #1c1c1c;
+            color: #f0f0f0;
+            text-align: center;
+            padding: 1em;
+            font-size: 0.9em;
+            font-style: italic;
+            border-top: 1px solid #00c8ff;
+        }
+    </style>
+    """
 
-# === SIDEBAR ===
+st.markdown(custom_css, unsafe_allow_html=True)
+
+# === INPUT FILTER ===
 st.sidebar.title("🚬 Marlboro Filter Black")
 
 stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
