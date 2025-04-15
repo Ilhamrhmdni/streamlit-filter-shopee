@@ -158,11 +158,11 @@ else:
 
 # === INPUT FILTER DI SIDEBAR ===
 st.sidebar.title("🚬 Marlboro Filter Black")
-stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
-terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=5)
+stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=50)
+terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=30)
 harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=10000.0)
 komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=2.0)
-komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=200.0)
+komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=0.0)
 
 uploaded_files = st.file_uploader("Masukan File Format (.txt)", type=["txt"], accept_multiple_files=True)
 
