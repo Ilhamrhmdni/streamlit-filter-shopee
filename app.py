@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 
-st.set_page_config(page_title="Shopee Filter", layout="wide")
+st.set_page_config(page_title="Novus Stream Lab", layout="wide")
 
 # === PILIHAN MODE TEMA ===
 theme_mode = st.sidebar.selectbox("🎨 Pilih Gaya Visual", ["Neon", "Soft Dark"])
