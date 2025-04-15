@@ -1,11 +1,19 @@
 import streamlit as st
 import pandas as pd
 import io
+import base64
 
 st.set_page_config(page_title="Shopee Filter", layout="wide")
 
+# === Fungsi untuk Mengambil Gambar Base64 ===
+def get_image_base64(file):
+    return base64.b64encode(file.read()).decode()
+
 # === PILIHAN MODE TEMA ===
 theme_mode = st.sidebar.selectbox("🎨 Pilih Gaya Visual", ["Neon", "Soft Dark"])
+
+# === Upload Background Gambar ===
+bg_image = st.sidebar.file_uploader("📷 Upload Background Gambar (jpg/png)", type=["jpg", "jpeg", "png"])
 
 # === CSS untuk mode Neon dan Soft Dark ===
 neon_css = """
@@ -150,11 +158,30 @@ soft_dark_css = """
     </style>
 """
 
+# === Menggabungkan Background dengan CSS ===
+bg_css = ""
+if bg_image:
+    try:
+        bg_base64 = get_image_base64(bg_image)
+        bg_css = f"""
+        <style>
+            body {{
+                background-image: url("data:image/png;base64,{bg_base64}");
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-position: center;
+            }}
+        </style>
+        """
+    except Exception as e:
+        st.warning(f"Gagal memuat gambar latar: {e}")
+
 # === APPLY THEME ===
 if theme_mode == "Neon":
-    st.markdown(neon_css, unsafe_allow_html=True)
+    st.markdown(bg_css + neon_css, unsafe_allow_html=True)
 else:
-    st.markdown(soft_dark_css, unsafe_allow_html=True)
+    st.markdown(bg_css + soft_dark_css, unsafe_allow_html=True)
 
 # === INPUT FILTER DI SIDEBAR ===
 st.sidebar.title("🚬 Marlboro Filter Black")
