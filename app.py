@@ -136,13 +136,13 @@ if uploaded_files and st.button("🚀 Proses Data"):
             # Menentukan status
             def get_status(row):
                 if row['Trend'] >= 10:
-                    return 'Trending ringan ✅'
+                    return 'Trending🔥'
                 elif row['Trend'] >= 2:
                     return 'Stabil 👍'
                 elif row['Trend'] < 2 and row['Trend'] > 0:
                     return 'Menurun ❌'
                 else:
-                    return 'NEW / TRENDING🔥'
+                    return 'NEW PRODUK '
 
             filtered_df['Status'] = filtered_df.apply(get_status, axis=1)
 
