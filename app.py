@@ -220,15 +220,15 @@ if uploaded_files and st.button("🚀 Proses Data"):
             removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
             # Menghitung persentase dengan pembatasan dua desimal
-            filtered_df['Persentase 30 Hari'] = (filtered_df['Terjual(Bulanan)'] / filtered_df['Terjual(Semua)'] * 100).round(2)
+            filtered_df['Trend'] = (filtered_df['Terjual(Bulanan)'] / filtered_df['Terjual(Semua)'] * 100).round(2)
 
             # Menentukan status
             def get_status(row):
-                if row['Persentase 30 Hari'] >= 10:
+                if row['Trend'] >= 10:
                     return 'Trending ringan ✅'
-                elif row['Persentase 30 Hari'] >= 2:
+                elif row['Trend'] >= 2:
                     return 'Stabil 👍'
-                elif row['Persentase 30 Hari'] < 2 and row['Persentase 30 Hari'] > 0:
+                elif row['Trend'] < 2 and row['Persentase 30 Hari'] > 0:
                     return 'Menurun ❌'
                 else:
                     return 'NEW / TRENDING🔥'
