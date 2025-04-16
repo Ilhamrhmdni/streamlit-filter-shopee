@@ -4,91 +4,8 @@ import io
 
 st.set_page_config(page_title="Novus Stream Lab", layout="wide")
 
-# === PILIHAN MODE TEMA ===
-theme_mode = st.sidebar.selectbox("🎨 Pilih Gaya Visual", ["Neon", "Soft Dark"])
-
-# === CSS untuk mode Neon dan Soft Dark ===
-neon_css = """
-    <style>
-        @keyframes neonGlow {
-            0% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
-            50% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
-            100% { box-shadow: 0 0 5px rgba(0, 255, 204, 0.2); }
-        }
-        @keyframes colorChange {
-            0% { border-color: #00ffcc; }
-            33% { border-color: #B026FF; }
-            66% { border-color: #FF073A; }
-            100% { border-color: #39FF14; }
-        }
-        body {
-            background-color: #111;
-            color: #e0ffe0;
-        }
-        .reportview-container .main .block-container {
-            background-color: #111;
-            color: #e0ffe0;
-        }
-        .sidebar .sidebar-content {
-            background-color: #1a1a1a;
-        }
-        .section-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
-            color: #00ffcc;
-            text-shadow: 0 0 3px #00ffcc;
-        }
-        .stat-box {
-            background-color: #333;
-            padding: 1em;
-            border-radius: 10px;
-            margin-bottom: 1em;
-            border: 3px solid #00ffcc;
-            color: #e0ffe0;
-            animation: neonGlow 3s ease-in-out infinite, colorChange 6s infinite;
-        }
-        .stat-box ul { padding-left: 1.2em; }
-        .stat-box li { margin-bottom: 0.4em; }
-        .stButton>button {
-            background-color: #00ffcc;
-            color: black;
-            border: none;
-            padding: 0.5em 1em;
-            border-radius: 4px;
-            font-weight: bold;
-            box-shadow: 0 0 5px #00ffcc;
-            transition: 0.3s ease;
-        }
-        .stButton>button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 8px #00ffcc;
-        }
-        .stTextInput>div>input, .stNumberInput>div>input {
-            background-color: #222;
-            color: #e0ffe0;
-            border: 1px solid #00ffcc;
-            box-shadow: 0 0 3px #00ffcc;
-        }
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #111;
-            color: #e0ffe0;
-            text-align: center;
-            padding: 1em;
-            font-size: 0.9em;
-            font-style: italic;
-            border-top: 1px solid #00ffcc;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
-        }
-    </style>
-"""
-
-soft_dark_css = """
+# === CSS untuk tema gelap tetap ===
+st.markdown("""
     <style>
         body {
             background-color: #1e1e1e;
@@ -148,13 +65,7 @@ soft_dark_css = """
             border-top: 1px solid #99ddff;
         }
     </style>
-"""
-
-# === APPLY THEME ===
-if theme_mode == "Neon":
-    st.markdown(neon_css, unsafe_allow_html=True)
-else:
-    st.markdown(soft_dark_css, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # === INPUT FILTER DI SIDEBAR ===
 st.sidebar.title("🚬 Marlboro Filter Black")
