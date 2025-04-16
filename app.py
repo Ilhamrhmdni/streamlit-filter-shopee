@@ -187,8 +187,11 @@ def preprocess_data(df):
     df['Harga'] = pd.to_numeric(df['Harga'], errors='coerce').fillna(0)
     df['Stock'] = pd.to_numeric(df['Stock'], errors='coerce').fillna(0)
     df['Terjual(Bulanan)'] = pd.to_numeric(df['Terjual(Bulanan)'], errors='coerce').fillna(0)
+    df['Terjual(Semua)'] = pd.to_numeric(df.get('Terjual(Semua)', 1), errors='coerce').replace(0, 1)
     df['Komisi(%)'] = pd.to_numeric(df['Komisi(%)'].astype(str).str.replace('%', ''), errors='coerce').fillna(0)
     df['Komisi(Rp)'] = pd.to_numeric(df['Komisi(Rp)'], errors='coerce').fillna(0)
+    df['Trend (%)'] = (df['Terjual(Bulanan)'] / df['Terjual(Semua)']) * 100
+    df['Trend (%)'] = df['Trend (%)'].round(2)
     return df
 
 def apply_filters(df):
@@ -202,7 +205,7 @@ def apply_filters(df):
 
 # === PROSES DATA ===
 if uploaded_files and st.button("🚀 Proses Data"):
-    with st.spinner("⏳ Memproses data..."):
+    with st.spinner("⌛ Memproses data..."):
         combined_df = pd.DataFrame()
 
         for file in uploaded_files:
