@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 
-st.set_page_config(page_title="Novus Stream Lab", layout="wide")
+st.set_page_config(page_title="Kudu Ngiseng", layout="wide")
 
 # === CSS untuk tema gelap tetap ===
 st.markdown("""
