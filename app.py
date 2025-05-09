@@ -179,11 +179,9 @@ if show_feedback:
     
     if st.button("Kirim"):
         if feedback.strip() != "":
-            # Ambil token dari secrets.toml
             bot_token = st.secrets["telegram"]["bot_token"]
             chat_id = st.secrets["telegram"]["chat_id"]
 
-            # Kirim ke Telegram
             url = f"https://api.telegram.org/bot {bot_token}/sendMessage"
             data = {"chat_id": chat_id, "text": f"📢 Feedback baru:\n\n{feedback}"}
             response = requests.post(url, data=data)
