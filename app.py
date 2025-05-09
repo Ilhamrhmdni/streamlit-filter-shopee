@@ -177,19 +177,21 @@ show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
 if show_feedback:
     feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
     if st.button("Kirim"):
-        if feedback.strip() != "":
-            # Ambil token dan chat_id dari secrets.toml
-            bot_token = st.secrets["telegram"]["bot_token"]
-            chat_id = st.secrets["telegram"]["chat_id"]
-            
-            # === KIRIM KE TELEGRAM ===
-            import telegram
-            bot = telegram.Bot(token=bot_token)
-            bot.sendMessage(chat_id=chat_id, text=f"📢 Feedback baru:\n\n{feedback}")
-            
+    if feedback.strip() != "":
+        # Ambil token dan chat_id dari secrets.toml
+        bot_token = st.secrets["telegram"]["bot_token"]
+        chat_id = st.secrets["telegram"]["chat_id"]
+
+        # Kirim pesan via Telegram API menggunakan requests
+        send_text = f"https://api.telegram.org/bot {bot_token}/sendMessage?chat_id={chat_id}&text={feedback}"
+        response = requests.get(send_text)
+
+        if response.status_code == 200:
             st.success("🎉 Terima kasih atas masukannya! Masukan telah terkirim.")
         else:
-            st.warning("⚠️ Masukan tidak boleh kosong!")
+            st.error("❌ Gagal mengirim ke Telegram. Cek token atau chat ID.")
+    else:
+        st.warning("⚠️ Masukan tidak boleh kosong!")
 
 # === FOOTER ===
 st.markdown("""
