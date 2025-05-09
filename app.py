@@ -178,12 +178,12 @@ if show_feedback:
     feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
     if st.button("Kirim"):
         if feedback.strip() != "":
+            # Ambil token dan chat_id dari secrets.toml
+            bot_token = st.secrets["telegram"]["bot_token"]
+            chat_id = st.secrets["telegram"]["chat_id"]
+            
             # === KIRIM KE TELEGRAM ===
             import telegram
-            
-            bot_token = '7580961854:AAHPh-nX8n9_U-L7kCvwautmkRnF92UCD84'
-            chat_id = '7580961854'
-            
             bot = telegram.Bot(token=bot_token)
             bot.sendMessage(chat_id=chat_id, text=f"📢 Feedback baru:\n\n{feedback}")
             
