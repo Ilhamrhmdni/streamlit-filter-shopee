@@ -173,10 +173,23 @@ if uploaded_files and st.button("🚀 Proses Data"):
 
 # === FEEDBACK SECTION ===
 show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
+
 if show_feedback:
     feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
     if st.button("Kirim"):
-        st.success("🎉 Terima kasih atas masukannya!")
+        if feedback.strip() != "":
+            # === KIRIM KE TELEGRAM ===
+            import telegram
+            
+            bot_token = '7580961854:AAHPh-nX8n9_U-L7kCvwautmkRnF92UCD84'
+            chat_id = '7580961854'
+            
+            bot = telegram.Bot(token=bot_token)
+            bot.sendMessage(chat_id=chat_id, text=f"📢 Feedback baru:\n\n{feedback}")
+            
+            st.success("🎉 Terima kasih atas masukannya! Masukan telah terkirim.")
+        else:
+            st.warning("⚠️ Masukan tidak boleh kosong!")
 
 # === FOOTER ===
 st.markdown("""
