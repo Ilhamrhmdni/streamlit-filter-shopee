@@ -1,6 +1,6 @@
 streamlit
+requests
 pandas
 plotly
 openpyxl
 python-telegram-bot==13.15
-requests
