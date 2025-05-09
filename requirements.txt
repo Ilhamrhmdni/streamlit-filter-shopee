@@ -2,3 +2,4 @@ streamlit
 pandas
 plotly
 openpyxl
+python-telegram-bot==13.15
