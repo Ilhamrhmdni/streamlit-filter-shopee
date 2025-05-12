@@ -3,7 +3,7 @@ import pandas as pd
 import io
 
 # === SET PAGE CONFIG ===
-st.set_page_config(page_title="Filter Black", layout="wide")
+st.set_page_config(page_title="Filter Produk & Opsi", layout="wide")
 
 # === PILIH OPSI DARI SIDEBAR ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
@@ -78,7 +78,7 @@ st.markdown("""
 def read_and_validate_file(uploaded_file):
     try:
         content = uploaded_file.read().decode('utf-8')
-        df = pd.read_csv(io.StringIO(content), delimiter='\t', on_bad_lines='skip')
+        df = pd.read_csv(io.StringIO(content), delimiter=',', on_bad_lines='skip')
         df['source_file'] = uploaded_file.name
         return df
     except Exception as e:
@@ -100,7 +100,7 @@ if option == "Filter Produk Extension Xyra":
     komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
     jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=1)
 
-    uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Masukkan File Format (.csv)", type=["csv"], accept_multiple_files=True)
 
     def preprocess_data(df):
         df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
@@ -140,8 +140,6 @@ if option == "Filter Produk Extension Xyra":
                     filtered_df = apply_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
-                    filtered_df.drop(columns=['Trend', 'Status'], errors='ignore', inplace=True)
-
                     avg_live = filtered_df['Jumlah Live'].mean().round(1)
 
                     st.success("✅ Data berhasil diproses!")
@@ -167,45 +165,49 @@ if option == "Filter Produk Extension Xyra":
                     st.subheader("🗑️ Produk Dihapus")
                     st.dataframe(removed_df)
                     st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
+
                 else:
                     st.warning("Tidak ada data valid yang bisa diproses.")
     else:
-        st.info("📁 Silakan upload file terlebih dahulu.")
+        st.info("📁 Silakan upload file CSV terlebih dahulu.")
 
 
-# === OPSI 2: FILTER PRODUK SHOPTIK ===
+# === OPSI 2: FILTER PRODUK SHOPTIK (FULL FINAL) ===
 elif option == "Filter Produk Shoptik":
     st.title("📱 Filter Produk Shoptik")
     st.markdown("Gunakan filter di bawah ini untuk menganalisis produk dari Shoptik.")
 
-    # Sidebar filter
+    # Sidebar filter tambahan
     st.sidebar.title("⚙️ Filter Shoptik")
+    trend_percentage_min = st.sidebar.number_input("Tren minimum (%)", min_value=0.0, value=50.0)
+    harga_min_shoptik = st.sidebar.number_input("Harga minimum", min_value=0.0, value=10000.0)
     penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=10)
     pendapatan_30_hari_min = st.sidebar.number_input("Pendapatan minimum (30 Hari)", min_value=0.0, value=50000.0)
     stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=5)
     rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.5, step=0.1)
     is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan")
 
-    uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Masukkan File Format (.csv)", type=["csv"], accept_multiple_files=True)
 
     def preprocess_shoptik(df):
+        df['trendPercentage'] = pd.to_numeric(df['trendPercentage'], errors='coerce').fillna(0)
+        df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
         df['Penjualan (30 Hari)'] = pd.to_numeric(df['Penjualan (30 Hari)'], errors='coerce').fillna(0)
-        df['Pendapatan 30 hari'] = pd.to_numeric(df['Pendapatan 30 hari'], errors='coerce').fillna(0)
-        df['Peringkat'] = pd.to_numeric(df['Peringkat'], errors='coerce').fillna(0)
         df['Stok'] = pd.to_numeric(df['Stok'], errors='coerce').fillna(0)
+        df['Peringkat'] = pd.to_numeric(df['Peringkat'], errors='coerce').fillna(0)
+        df['Pendapatan 30 hari'] = pd.to_numeric(df['Pendapatan 30 hari'], errors='coerce').fillna(0)
         df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya', case=False, na=False)
         return df
 
     def apply_shoptik_filters(df):
-        df_filtered = df[
+        return df[
+            (df['trendPercentage'] >= trend_percentage_min) &
+            (df['Harga'] >= harga_min_shoptik) &
             (df['Penjualan (30 Hari)'] >= penjualan_30_hari_min) &
-            (df['Pendapatan 30 hari'] >= pendapatan_30_hari_min) &
+            (df['Stok'] >= stok_min_shoptik) &
             (df['Peringkat'] >= rating_min) &
-            (df['Stok'] >= stok_min_shoptik)
+            (df['Pendapatan 30 hari'] >= pendapatan_30_hari_min)
         ]
-        if is_ad:
-            df_filtered = df_filtered[df_filtered['isAd']]
-        return df_filtered
 
     if uploaded_files:
         if st.button("🔎 Analisis Data"):
@@ -234,6 +236,7 @@ elif option == "Filter Produk Shoptik":
                             <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
                             <li>Rata-rata rating: <strong>{filtered_df['Peringkat'].mean().round(1)}</strong></li>
                             <li>Rata-rata pendapatan 30 hari: <strong>Rp{filtered_df['Pendapatan 30 hari'].mean().round(0).astype(int).apply(lambda x: f'{x:,}').iloc[0]}</strong></li>
+                            <li>Rata-rata tren (%): <strong>{filtered_df['trendPercentage'].mean().round(1)}%</strong></li>
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
@@ -248,7 +251,7 @@ elif option == "Filter Produk Shoptik":
                 else:
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
-        st.info("📁 Silakan Upload File di Sini")
+        st.info("📁 Silakan upload file CSV untuk Opsi 2.")
 
 # === FOOTER ===
 st.markdown("""
