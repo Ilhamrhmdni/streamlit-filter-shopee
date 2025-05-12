@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import io
-import requests  # Tambahkan untuk Telegram feedback
 
 st.set_page_config(page_title="Filter Produk", layout="wide")
 
@@ -72,10 +71,10 @@ st.markdown("""
 st.sidebar.title("🚬 Mancaster Putihan")
 stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
 terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100)
-harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0)
-komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0)
-komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
-jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live Produk", min_value=0, value=7)
+harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=20000.0)
+komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=1.0)
+komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=1000.0)
+jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=7)
 
 uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
 
@@ -84,7 +83,7 @@ def read_and_validate_file(uploaded_file):
     try:
         content = uploaded_file.read().decode('utf-8')
         df = pd.read_csv(io.StringIO(content), delimiter='\t', on_bad_lines='skip')
-        
+
         required_cols = {
             'Link Produk': 'Link tidak tersedia',
             'Harga': 0,
@@ -92,7 +91,7 @@ def read_and_validate_file(uploaded_file):
             'Terjual(Bulanan)': 0,
             'Komisi(%)': 0,
             'Komisi(Rp)': 0,
-            'Jumlah Live': 0  # ← Nama kolom sesuai permintaan
+            'Jumlah Live': 0
         }
 
         for col, default in required_cols.items():
@@ -113,7 +112,7 @@ def preprocess_data(df):
     df['Terjual(Bulanan)'] = pd.to_numeric(df['Terjual(Bulanan)'], errors='coerce').fillna(0)
     df['Komisi(%)'] = pd.to_numeric(df['Komisi(%)'].astype(str).str.replace('%', ''), errors='coerce').fillna(0)
     df['Komisi(Rp)'] = pd.to_numeric(df['Komisi(Rp)'], errors='coerce').fillna(0)
-    df['Jumlah Live'] = pd.to_numeric(df['Jumlah Live'], errors='coerce').fillna(0)  # ← tambahan ini
+    df['Jumlah Live'] = pd.to_numeric(df['Jumlah Live'], errors='coerce').fillna(0)
     return df
 
 def apply_filters(df):
@@ -123,7 +122,7 @@ def apply_filters(df):
         (df['Harga'] >= harga_min) & 
         (df['Komisi(%)'] >= komisi_persen_min) & 
         (df['Komisi(Rp)'] >= komisi_rp_min) &
-        (df['Jumlah Live'] >= jumlah_live_min)  # ← filter baru
+        (df['Jumlah Live'] >= jumlah_live_min)
     ]
 
 # === PROSES DATA ===
@@ -146,26 +145,8 @@ if uploaded_files:
                 filtered_df = apply_filters(combined_df)
                 removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
-                # Hitung Trend
-                if 'Terjual(Semua)' in combined_df.columns:
-                    combined_df['Terjual(Semua)'] = pd.to_numeric(combined_df['Terjual(Semua)'], errors='coerce').fillna(1)
-                else:
-                    combined_df['Terjual(Semua)'] = 1
-
-                filtered_df['Trend'] = (filtered_df['Terjual(Bulanan)'] / filtered_df['Terjual(Semua)'] * 100).round(2)
-
-                # Status
-                def get_status(row):
-                    if row['Trend'] >= 10:
-                        return 'Trending🔥'
-                    elif row['Trend'] >= 2:
-                        return 'Stabil 👍'
-                    elif row['Trend'] < 2 and row['Trend'] > 0:
-                        return 'Menurun ❌'
-                    else:
-                        return 'NEW PRODUK'
-
-                filtered_df['Status'] = filtered_df.apply(get_status, axis=1)
+                # Hapus kolom Trend dan Status jika ada
+                filtered_df.drop(columns=['Trend', 'Status'], errors='ignore', inplace=True)
 
                 st.success("✅ Data berhasil diproses!")
 
@@ -186,7 +167,7 @@ if uploaded_files:
                 """, unsafe_allow_html=True)
 
                 st.subheader("✅ Final Produk")
-                st.dataframe(filtered_df.style.background_gradient(subset=['Trend'], cmap='Blues'))
+                st.dataframe(filtered_df)
                 st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
 
                 st.subheader("🗑️ Produk Dihapus")
@@ -205,17 +186,20 @@ if show_feedback:
     
     if st.button("Kirim"):
         if feedback.strip() != "":
-            bot_token = st.secrets["telegram"]["bot_token"]
-            chat_id = st.secrets["telegram"]["chat_id"]
+            try:
+                bot_token = st.secrets["telegram"]["bot_token"]
+                chat_id = st.secrets["telegram"]["chat_id"]
 
-            url = f"https://api.telegram.org/bot {bot_token}/sendMessage"
-            data = {"chat_id": chat_id, "text": f"📢 Feedback baru:\n\n{feedback}"}
-            response = requests.post(url, data=data)
+                url = f"https://api.telegram.org/bot {bot_token}/sendMessage"
+                data = {"chat_id": chat_id, "text": f"📢 Feedback baru:\n\n{feedback}"}
+                response = requests.post(url, data=data)
 
-            if response.status_code == 200:
-                st.success("🎉 Terima kasih atas masukannya! Masukan telah terkirim.")
-            else:
-                st.error("❌ Gagal mengirim ke Telegram. Cek token/chat ID.")
+                if response.status_code == 200:
+                    st.success("🎉 Terima kasih atas masukannya! Masukan telah terkirim.")
+                else:
+                    st.error("❌ Gagal mengirim ke Telegram. Cek token/chat ID.")
+            except Exception as e:
+                st.error(f"⚠️ Error saat mengirim feedback: {e}")
         else:
             st.warning("⚠️ Masukan tidak boleh kosong!")
 
