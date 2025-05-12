@@ -107,9 +107,6 @@ def preprocess_shoptik(df):
         errors='coerce'
     ).fillna(0)
 
-    # Bersihkan kolom 'Pendapatan 30 hari' (ubah ke numerik)
-    df['Pendapatan 30 hari'] = pd.to_numeric(df['Pendapatan 30 hari'], errors='coerce').fillna(0)
-
     # Ubah kolom 'isAd' ke boolean
     df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya|Yes', case=False, na=False)
 
@@ -211,7 +208,6 @@ elif option == "Filter Produk Shoptik":
     trend_percentage_min = st.sidebar.number_input("Tren minimum (%)", min_value=0.0, value=50.0)
     harga_min_shoptik = st.sidebar.number_input("Harga minimum", min_value=0.0, value=10000.0)
     penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=10)
-    pendapatan_30_hari_min = st.sidebar.number_input("Pendapatan minimum (30 Hari)", min_value=0.0, value=50000.0)
     stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=5)
     rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.5, step=0.1)
     is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan")
@@ -224,8 +220,7 @@ elif option == "Filter Produk Shoptik":
             (df['Harga'] >= harga_min_shoptik) &
             (df['Penjualan (30 Hari)'] >= penjualan_30_hari_min) &
             (df['Stok'] >= stok_min_shoptik) &
-            (df['Peringkat'] >= rating_min) &
-            (df['Pendapatan 30 hari'] >= pendapatan_30_hari_min)
+            (df['Peringkat'] >= rating_min)
         ]
 
     if uploaded_files:
@@ -240,7 +235,7 @@ elif option == "Filter Produk Shoptik":
 
                 if not combined_df.empty:
                     total_products = len(combined_df)
-                    combined_df = preprocess_shoptik(combined_df)  # Pastikan fungsi dipanggil setelah didefinisikan
+                    combined_df = preprocess_shoptik(combined_df)
                     filtered_df = apply_shoptik_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
@@ -251,12 +246,6 @@ elif option == "Filter Produk Shoptik":
                         avg_rating = filtered_df['Peringkat'].mean().round(1)
                     else:
                         avg_rating = "Tidak tersedia"
-
-                    # Validasi untuk 'Pendapatan 30 hari'
-                    if not filtered_df.empty and 'Pendapatan 30 hari' in filtered_df.columns:
-                        avg_income = int(filtered_df['Pendapatan 30 hari'].mean())
-                    else:
-                        avg_income = "Tidak tersedia"
 
                     # Validasi untuk 'trendPercentage'
                     if not filtered_df.empty and 'trendPercentage' in filtered_df.columns:
@@ -272,7 +261,6 @@ elif option == "Filter Produk Shoptik":
                             <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
                             <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
                             <li>Rata-rata rating: <strong>{avg_rating}</strong></li>
-                            <li>Rata-rata pendapatan 30 hari: <strong>Rp{avg_income:, if isinstance(avg_income, int) else 'Tidak tersedia'}</strong></li>
                             <li>Rata-rata tren (%): <strong>{avg_trend}%</strong></li>
                         </ul>
                     </div>
