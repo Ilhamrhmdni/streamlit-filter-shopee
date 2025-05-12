@@ -252,7 +252,7 @@ elif option == "Filter Produk Shoptik":
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
         st.info("📁 Silakan upload file CSV untuk Opsi 2.")
-
+        
 # === FOOTER ===
 st.markdown("""
     <div class="footer">
