@@ -1,13 +1,15 @@
 import streamlit as st
 import pandas as pd
 import io
-import requests
 
 # === SET PAGE CONFIG ===
 st.set_page_config(page_title="Filter Produk & Opsi", layout="wide")
 
 # === PILIH OPSI DARI SIDEBAR ===
-option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", ["Filter Produk Extension Xyra", "Filter Produk Shoptik"])
+option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
+    "Filter Produk Extension Xyra", 
+    "Filter Produk Shoptik"
+])
 
 # === CSS UNTUK SEMUA OPSI ===
 st.markdown("""
@@ -72,12 +74,24 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === JIKA MEMILIH OPSI 1: FILTER PRODUK ===
+# === FUNGSI UMUM ===
+def read_and_validate_file(uploaded_file):
+    try:
+        content = uploaded_file.read().decode('utf-8')
+        df = pd.read_csv(io.StringIO(content), delimiter='\t', on_bad_lines='skip')
+        df['source_file'] = uploaded_file.name
+        return df
+    except Exception as e:
+        st.error(f"Gagal membaca {uploaded_file.name}: {e}")
+        return None
+
+
+# === OPSI 1: FILTER PRODUK EXTENSION XYRA (SHOPEE) ===
 if option == "Filter Produk Extension Xyra":
     st.title("🛒 Filter Produk Shopee")
     st.markdown("Gunakan filter di sidebar untuk menyaring produk sesuai kriteria.")
 
-    # === INPUT FILTER DI SIDEBAR ===
+    # Input filter
     st.sidebar.title("🚬 Filter Black")
     stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
     terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100)
@@ -87,34 +101,6 @@ if option == "Filter Produk Extension Xyra":
     jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=1)
 
     uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
-
-    # === FUNGSI PEMBACAAN DAN FILTER ===
-    def read_and_validate_file(uploaded_file):
-        try:
-            content = uploaded_file.read().decode('utf-8')
-            df = pd.read_csv(io.StringIO(content), delimiter='\t', on_bad_lines='skip')
-
-            required_cols = {
-                'Link Produk': 'Link tidak tersedia',
-                'Harga': 0,
-                'Stock': 0,
-                'Terjual(Bulanan)': 0,
-                'Komisi(%)': 0,
-                'Komisi(Rp)': 0,
-                'Jumlah Live': 0
-            }
-
-            for col, default in required_cols.items():
-                if col not in df.columns:
-                    df[col] = default
-                    st.warning(f"Kolom '{col}' tidak ditemukan di {uploaded_file.name}, akan diisi dengan default.")
-
-            df['source_file'] = uploaded_file.name
-            return df
-
-        except Exception as e:
-            st.error(f"Gagal membaca {uploaded_file.name}: {e}")
-            return None
 
     def preprocess_data(df):
         df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
@@ -127,15 +113,14 @@ if option == "Filter Produk Extension Xyra":
 
     def apply_filters(df):
         return df[
-            (df['Stock'] >= stok_min) & 
-            (df['Terjual(Bulanan)'] >= terjual_min) & 
-            (df['Harga'] >= harga_min) & 
-            (df['Komisi(%)'] >= komisi_persen_min) & 
+            (df['Stock'] >= stok_min) &
+            (df['Terjual(Bulanan)'] >= terjual_min) &
+            (df['Harga'] >= harga_min) &
+            (df['Komisi(%)'] >= komisi_persen_min) &
             (df['Komisi(Rp)'] >= komisi_rp_min) &
             (df['Jumlah Live'] >= jumlah_live_min)
         ]
 
-    # === PROSES DATA ===
     if uploaded_files:
         if st.button("🚀 Proses Data"):
             with st.spinner("⏳ Memproses data..."):
@@ -155,12 +140,11 @@ if option == "Filter Produk Extension Xyra":
                     filtered_df = apply_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
-                    # Hapus kolom Trend dan Status jika ada
                     filtered_df.drop(columns=['Trend', 'Status'], errors='ignore', inplace=True)
 
-                    st.success("✅ Data berhasil diproses!")
-
                     avg_live = filtered_df['Jumlah Live'].mean().round(1)
+
+                    st.success("✅ Data berhasil diproses!")
 
                     st.markdown(f"""
                     <div class="stat-box">
@@ -188,51 +172,87 @@ if option == "Filter Produk Extension Xyra":
     else:
         st.info("📁 Silakan upload file terlebih dahulu.")
 
-    # === FEEDBACK SECTION ===
-    show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
 
-    if show_feedback:
-        feedback = st.text_area("Tulis kritik atau saran kamu di sini:")
-        
-        if st.button("Kirim"):
-            if feedback.strip() != "":
-                try:
-                    bot_token = st.secrets["telegram"]["bot_token"]
-                    chat_id = st.secrets["telegram"]["chat_id"]
-
-                    url = f"https://api.telegram.org/bot {bot_token}/sendMessage"
-                    data = {"chat_id": chat_id, "text": f"📢 Feedback baru:\n\n{feedback}"}
-                    response = requests.post(url, data=data)
-
-                    if response.status_code == 200:
-                        st.success("🎉 Terima kasih atas masukannya! Masukan telah terkirim.")
-                    else:
-                        st.error("❌ Gagal mengirim ke Telegram. Cek token/chat ID.")
-                except Exception as e:
-                    st.error(f"⚠️ Error saat mengirim feedback: {e}")
-            else:
-                st.warning("⚠️ Masukan tidak boleh kosong!")
-
-    # === FOOTER ===
-    st.markdown("""
-        <div class="footer">
-            &copy; 2025 - Dibuat oleh Wong Sukses
-        </div>
-    """, unsafe_allow_html=True)
-
-
-# === JIKA MEMILIH OPSI 2: TAMBAHAN FITUR BARU ===
+# === OPSI 2: FILTER PRODUK SHOPTIK ===
 elif option == "Filter Produk Shoptik":
-    st.title("🛠️ Maintance")
-    st.info("Silakan tambahkan fungsi baru di bagian ini sesuai kebutuhan.")
+    st.title("📱 Filter Produk Shoptik")
+    st.markdown("Gunakan filter di bawah ini untuk menganalisis produk dari Shoptik.")
 
-    st.write("Ini adalah halaman opsional. Kamu bisa gunakan untuk:")
-    st.markdown("""
-    - Upload file CSV/Excel
-    - Analisis tambahan
-    - Prediksi penjualan
-    - Visualisasi grafik
-    - Tools lainnya
-    """)
+    # Sidebar filter
+    st.sidebar.title("⚙️ Filter Shoptik")
+    penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=10)
+    pendapatan_30_hari_min = st.sidebar.number_input("Pendapatan minimum (30 Hari)", min_value=0.0, value=50000.0)
+    stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=5)
+    rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.5, step=0.1)
+    is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan")
 
-    st.markdown("Hubungi developer atau edit file ini untuk menambahkan logika di bagian ini.")
+    uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
+
+    def preprocess_shoptik(df):
+        df['Penjualan (30 Hari)'] = pd.to_numeric(df['Penjualan (30 Hari)'], errors='coerce').fillna(0)
+        df['Pendapatan 30 hari'] = pd.to_numeric(df['Pendapatan 30 hari'], errors='coerce').fillna(0)
+        df['Peringkat'] = pd.to_numeric(df['Peringkat'], errors='coerce').fillna(0)
+        df['Stok'] = pd.to_numeric(df['Stok'], errors='coerce').fillna(0)
+        df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya', case=False, na=False)
+        return df
+
+    def apply_shoptik_filters(df):
+        df_filtered = df[
+            (df['Penjualan (30 Hari)'] >= penjualan_30_hari_min) &
+            (df['Pendapatan 30 hari'] >= pendapatan_30_hari_min) &
+            (df['Peringkat'] >= rating_min) &
+            (df['Stok'] >= stok_min_shoptik)
+        ]
+        if is_ad:
+            df_filtered = df_filtered[df_filtered['isAd']]
+        return df_filtered
+
+    if uploaded_files:
+        if st.button("🔎 Analisis Data"):
+            with st.spinner("⏳ Menganalisis data Shoptik..."):
+                combined_df = pd.DataFrame()
+
+                for file in uploaded_files:
+                    df = read_and_validate_file(file)
+                    if df is not None:
+                        combined_df = pd.concat([combined_df, df], ignore_index=True)
+
+                if not combined_df.empty:
+                    total_products = len(combined_df)
+                    combined_df = preprocess_shoptik(combined_df)
+                    filtered_df = apply_shoptik_filters(combined_df)
+                    removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
+
+                    st.success("✅ Analisis selesai!")
+
+                    st.markdown(f"""
+                    <div class="stat-box">
+                        <div class="section-title">📊 Statistik Shoptik</div>
+                        <ul>
+                            <li>Total produk diproses: <strong>{total_products}</strong></li>
+                            <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
+                            <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
+                            <li>Rata-rata rating: <strong>{filtered_df['Peringkat'].mean().round(1)}</strong></li>
+                            <li>Rata-rata pendapatan 30 hari: <strong>Rp{filtered_df['Pendapatan 30 hari'].mean().round(0).astype(int).apply(lambda x: f'{x:,}').iloc[0]}</strong></li>
+                        </ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    st.subheader("✅ Produk Lolos Filter")
+                    st.dataframe(filtered_df)
+                    st.download_button("⬇️ Download Data Shoptik", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_shoptik.csv", mime='text/csv')
+
+                    st.subheader("❌ Produk Tidak Lolos Filter")
+                    st.dataframe(removed_df)
+
+                else:
+                    st.warning("Tidak ada data valid untuk dianalisis.")
+    else:
+        st.info("📁 Silakan upload file untuk Opsi 2.")
+
+# === FOOTER ===
+st.markdown("""
+    <div class="footer">
+        &copy; 2025 - Dibuat oleh Wong Sukses
+    </div>
+""", unsafe_allow_html=True)
