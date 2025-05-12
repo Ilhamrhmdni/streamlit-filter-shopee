@@ -6,10 +6,10 @@ import io
 st.set_page_config(page_title="Filter Produk & Opsi", layout="wide")
 
 # === PILIH OPSI DARI SIDEBAR ===
-option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
-    "Filter Produk Extension Xyra", 
-    "Filter Produk Shoptik"
-])
+option = st.sidebar.selectbox(
+    "🎯 Pilih Mode Aplikasi",
+    ["Filter Produk Extension Xyra", "Filter Produk Shoptik"]
+)
 
 # === CSS UNTUK SEMUA OPSI ===
 st.markdown("""
@@ -75,7 +75,21 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === FUNGSI UMUM ===
-def read_and_validate_file(uploaded_file):
+# Fungsi untuk membaca dan memvalidasi file TXT
+def read_and_validate_txt(uploaded_file):
+    try:
+        content = uploaded_file.read().decode('utf-8')
+        lines = content.splitlines()
+        data = [line.split(',') for line in lines]
+        df = pd.DataFrame(data[1:], columns=data[0])
+        df['source_file'] = uploaded_file.name
+        return df
+    except Exception as e:
+        st.error(f"Gagal membaca {uploaded_file.name}: {e}")
+        return None
+
+# Fungsi untuk membaca dan memvalidasi file CSV
+def read_and_validate_csv(uploaded_file):
     try:
         content = uploaded_file.read().decode('utf-8')
         df = pd.read_csv(io.StringIO(content), delimiter=',', on_bad_lines='skip')
@@ -87,29 +101,23 @@ def read_and_validate_file(uploaded_file):
 
 # === FUNGSI PREPROCESSING SHOPTIK ===
 def preprocess_shoptik(df):
-    # Bersihkan kolom 'trendPercentage' (hapus % dan ubah ke numerik)
-    df['trendPercentage'] = pd.to_numeric(df['trendPercentage'].astype(str).str.replace('%', ''), errors='coerce').fillna(0)
-
-    # Bersihkan kolom 'Harga' (hapus karakter non-numerik)
-    df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
-
-    # Bersihkan kolom 'Penjualan (30 Hari)' (ubah ke numerik)
-    df['Penjualan (30 Hari)'] = pd.to_numeric(df['Penjualan (30 Hari)'], errors='coerce').fillna(0)
-
-    # Bersihkan kolom 'Stok' (ubah ke numerik)
+    df['trendPercentage'] = pd.to_numeric(
+        df['trendPercentage'].astype(str).str.replace('%', ''), errors='coerce'
+    ).fillna(0)
+    df['Harga'] = pd.to_numeric(
+        df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce'
+    ).fillna(0)
+    df['Penjualan (30 Hari)'] = pd.to_numeric(
+        df['Penjualan (30 Hari)'], errors='coerce'
+    ).fillna(0)
     df['Stok'] = pd.to_numeric(df['Stok'], errors='coerce').fillna(0)
-
-    # Bersihkan kolom 'Peringkat' (ganti koma jadi titik, hapus karakter non-numerik)
     df['Peringkat'] = pd.to_numeric(
         df['Peringkat'].astype(str)
-          .str.replace(',', '.')  # ganti koma ke titik
+          .str.replace(',', '.')
           .str.extract(r'(\d+\.?\d*)', expand=False),
         errors='coerce'
     ).fillna(0)
-
-    # Ubah kolom 'isAd' ke boolean
     df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya|Yes', case=False, na=False)
-
     return df
 
 # === OPSI 1: FILTER PRODUK EXTENSION XYRA (SHOPEE) ===
@@ -125,7 +133,6 @@ if option == "Filter Produk Extension Xyra":
     komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0)
     komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
     jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=1)
-
     uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
 
     def preprocess_data(df):
@@ -151,25 +158,19 @@ if option == "Filter Produk Extension Xyra":
         if st.button("🚀 Proses Data"):
             with st.spinner("⏳ Memproses data..."):
                 combined_df = pd.DataFrame()
-
                 for file in uploaded_files:
-                    df = read_and_validate_txt(file)  # Gunakan fungsi untuk membaca file .txt
+                    df = read_and_validate_txt(file)
                     if df is not None:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
-
                 if not combined_df.empty:
                     total_links = len(combined_df)
                     combined_df.drop_duplicates(subset=['Link Produk'], inplace=True)
                     deleted_dupes = total_links - len(combined_df)
-
                     combined_df = preprocess_data(combined_df)
                     filtered_df = apply_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-
                     avg_live = filtered_df['Jumlah Live'].mean().round(1)
-
                     st.success("✅ Data berhasil diproses!")
-
                     st.markdown(f"""
                     <div class="stat-box">
                         <div class="section-title">📊 Statistik</div>
@@ -183,20 +184,16 @@ if option == "Filter Produk Extension Xyra":
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
-
                     st.subheader("✅ Final Produk")
                     st.dataframe(filtered_df)
                     st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
-
                     st.subheader("🗑️ Produk Dihapus")
                     st.dataframe(removed_df)
                     st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
-
                 else:
                     st.warning("Tidak ada data valid yang bisa diproses.")
     else:
         st.info("📁 Silakan upload file TXT terlebih dahulu.")
-
 
 # === OPSI 2: FILTER PRODUK SHOPTIK ===
 elif option == "Filter Produk Shoptik":
@@ -211,7 +208,6 @@ elif option == "Filter Produk Shoptik":
     stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=5)
     rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.5, step=0.1)
     is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False)
-
     uploaded_files = st.file_uploader("Masukkan File Format (.csv)", type=["csv"], accept_multiple_files=True)
 
     def apply_shoptik_filters(df):
@@ -222,43 +218,26 @@ elif option == "Filter Produk Shoptik":
             (df['Stok'] >= stok_min_shoptik) &
             (df['Peringkat'] >= rating_min)
         ]
-        
-        # Tambahkan filter untuk isAd jika checkbox dicentang
         if is_ad:
             filtered_df = filtered_df[filtered_df['isAd']]
-        
         return filtered_df
 
     if uploaded_files:
         if st.button("🔎 Analisis Data"):
             with st.spinner("⏳ Menganalisis data Shoptik..."):
                 combined_df = pd.DataFrame()
-
                 for file in uploaded_files:
-                    df = read_and_validate_file(file)
+                    df = read_and_validate_csv(file)
                     if df is not None:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
-
                 if not combined_df.empty:
                     total_products = len(combined_df)
                     combined_df = preprocess_shoptik(combined_df)
                     filtered_df = apply_shoptik_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-
                     st.success("✅ Analisis selesai!")
-
-                    # Validasi untuk 'Peringkat'
-                    if not filtered_df.empty and 'Peringkat' in filtered_df.columns:
-                        avg_rating = filtered_df['Peringkat'].mean().round(1)
-                    else:
-                        avg_rating = "Tidak tersedia"
-
-                    # Validasi untuk 'trendPercentage'
-                    if not filtered_df.empty and 'trendPercentage' in filtered_df.columns:
-                        avg_trend = filtered_df['trendPercentage'].mean().round(1)
-                    else:
-                        avg_trend = "Tidak tersedia"
-
+                    avg_rating = filtered_df['Peringkat'].mean().round(1) if 'Peringkat' in filtered_df.columns else "Tidak tersedia"
+                    avg_trend = filtered_df['trendPercentage'].mean().round(1) if 'trendPercentage' in filtered_df.columns else "Tidak tersedia"
                     st.markdown(f"""
                     <div class="stat-box">
                         <div class="section-title">📊 Statistik Shoptik</div>
@@ -271,14 +250,11 @@ elif option == "Filter Produk Shoptik":
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
-
                     st.subheader("✅ Produk Lolos Filter")
                     st.dataframe(filtered_df)
                     st.download_button("⬇️ Download Data Shoptik", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_shoptik.csv", mime='text/csv')
-
                     st.subheader("❌ Produk Tidak Lolos Filter")
                     st.dataframe(removed_df)
-
                 else:
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
