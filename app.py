@@ -6,10 +6,10 @@ import io
 st.set_page_config(page_title="Filter Produk & Opsi", layout="wide")
 
 # === PILIH OPSI DARI SIDEBAR ===
-option = st.sidebar.selectbox(
-    "🎯 Pilih Mode Aplikasi",
-    ["Filter Produk Extension Xyra", "Filter Produk Shoptik"]
-)
+option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
+    "Filter Produk Extension Xyra", 
+    "Filter Produk Shoptik"
+])
 
 # === CSS UNTUK SEMUA OPSI ===
 st.markdown("""
@@ -227,7 +227,7 @@ elif option == "Filter Produk Shoptik":
             with st.spinner("⏳ Menganalisis data Shoptik..."):
                 combined_df = pd.DataFrame()
                 for file in uploaded_files:
-                    df = read_and_validate_csv(file)
+                    df = read_and_validate_csv(file)  # Perbaikan: Gunakan fungsi yang benar
                     if df is not None:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
                 if not combined_df.empty:
