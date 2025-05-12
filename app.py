@@ -189,34 +189,6 @@ elif option == "Filter Produk Shoptik":
 
     uploaded_files = st.file_uploader("Masukkan File Format (.csv)", type=["csv"], accept_multiple_files=True)
 
-    def preprocess_shoptik(df):
-        df['trendPercentage'] = pd.to_numeric(df['trendPercentage'], errors='coerce').fillna(0)
-        df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
-        df['Penjualan (30 Hari)'] = pd.to_numeric(df['Penjualan (30 Hari)'], errors='coerce').fillna(0)
-        df['Stok'] = pd.to_numeric(df['Stok'], errors='coerce').fillna(0)
-
-        # ✅ Perbaikan kolom 'Peringkat'
-        df['Peringkat'] = pd.to_numeric(
-            df['Peringkat'].astype(str)
-              .str.replace(',', '.')  # ganti koma ke titik
-              .str.extract(r'(\d+\.?\d*)', expand=False),
-            errors='coerce'
-        ).fillna(0)
-
-        df['Pendapatan 30 hari'] = pd.to_numeric(df['Pendapatan 30 hari'], errors='coerce').fillna(0)
-        df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya', case=False, na=False)
-        return df
-
-    def apply_shoptik_filters(df):
-        return df[
-            (df['trendPercentage'] >= trend_percentage_min) &
-            (df['Harga'] >= harga_min_shoptik) &
-            (df['Penjualan (30 Hari)'] >= penjualan_30_hari_min) &
-            (df['Stok'] >= stok_min_shoptik) &
-            (df['Peringkat'] >= rating_min) &
-            (df['Pendapatan 30 hari'] >= pendapatan_30_hari_min)
-        ]
-
     if uploaded_files:
         if st.button("🔎 Analisis Data"):
             with st.spinner("⏳ Menganalisis data Shoptik..."):
@@ -235,9 +207,23 @@ elif option == "Filter Produk Shoptik":
 
                     st.success("✅ Analisis selesai!")
 
-                    avg_rating = filtered_df['Peringkat'].mean().round(1)
-                    avg_income = int(filtered_df['Pendapatan 30 hari'].mean())
-                    avg_trend = filtered_df['trendPercentage'].mean().round(1)
+                    # Validasi untuk 'Peringkat'
+                    if not filtered_df.empty and 'Peringkat' in filtered_df.columns:
+                        avg_rating = filtered_df['Peringkat'].mean().round(1)
+                    else:
+                        avg_rating = "Tidak tersedia"
+
+                    # Validasi untuk 'Pendapatan 30 hari'
+                    if not filtered_df.empty and 'Pendapatan 30 hari' in filtered_df.columns:
+                        avg_income = int(filtered_df['Pendapatan 30 hari'].mean())
+                    else:
+                        avg_income = "Tidak tersedia"
+
+                    # Validasi untuk 'trendPercentage'
+                    if not filtered_df.empty and 'trendPercentage' in filtered_df.columns:
+                        avg_trend = filtered_df['trendPercentage'].mean().round(1)
+                    else:
+                        avg_trend = "Tidak tersedia"
 
                     st.markdown(f"""
                     <div class="stat-box">
@@ -247,7 +233,7 @@ elif option == "Filter Produk Shoptik":
                             <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
                             <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
                             <li>Rata-rata rating: <strong>{avg_rating}</strong></li>
-                            <li>Rata-rata pendapatan 30 hari: <strong>Rp{avg_income:,}</strong></li>
+                            <li>Rata-rata pendapatan 30 hari: <strong>Rp{avg_income:, if isinstance(avg_income, int) else 'Tidak tersedia'}</strong></li>
                             <li>Rata-rata tren (%): <strong>{avg_trend}%</strong></li>
                         </ul>
                     </div>
@@ -264,7 +250,6 @@ elif option == "Filter Produk Shoptik":
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
         st.info("📁 Silakan upload file CSV untuk Opsi 2.")
-
 
 # === FOOTER ===
 st.markdown("""
