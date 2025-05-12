@@ -5,7 +5,7 @@ import io
 # === SET PAGE CONFIG ===
 st.set_page_config(page_title="Filter Produk Shopee", layout="wide")
 
-# === LOAD CSS TERPISAH ===
+# === PANGGIL CSS ===
 with open("style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
