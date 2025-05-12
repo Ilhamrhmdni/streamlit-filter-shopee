@@ -210,18 +210,24 @@ elif option == "Filter Produk Shoptik":
     penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=10)
     stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=5)
     rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.5, step=0.1)
-    is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan")
+    is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False)
 
     uploaded_files = st.file_uploader("Masukkan File Format (.csv)", type=["csv"], accept_multiple_files=True)
 
     def apply_shoptik_filters(df):
-        return df[
+        filtered_df = df[
             (df['trendPercentage'] >= trend_percentage_min) &
             (df['Harga'] >= harga_min_shoptik) &
             (df['Penjualan (30 Hari)'] >= penjualan_30_hari_min) &
             (df['Stok'] >= stok_min_shoptik) &
             (df['Peringkat'] >= rating_min)
         ]
+        
+        # Tambahkan filter untuk isAd jika checkbox dicentang
+        if is_ad:
+            filtered_df = filtered_df[filtered_df['isAd']]
+        
+        return filtered_df
 
     if uploaded_files:
         if st.button("🔎 Analisis Data"):
