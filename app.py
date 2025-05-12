@@ -223,7 +223,7 @@ if option == "Filter Produk Extension Xyra":
 
 # === JIKA MEMILIH OPSI 2: TAMBAHAN FITUR BARU ===
 elif option == "Filter Produk Shoptik":
-    st.title("🛠️ Opsi 2: Fitur Baru")
+    st.title("🛠️ Maintance")
     st.info("Silakan tambahkan fungsi baru di bagian ini sesuai kebutuhan.")
 
     st.write("Ini adalah halaman opsional. Kamu bisa gunakan untuk:")
