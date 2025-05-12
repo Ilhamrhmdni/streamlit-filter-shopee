@@ -85,6 +85,35 @@ def read_and_validate_file(uploaded_file):
         st.error(f"Gagal membaca {uploaded_file.name}: {e}")
         return None
 
+# === FUNGSI PREPROCESSING SHOPTIK ===
+def preprocess_shoptik(df):
+    # Bersihkan kolom 'trendPercentage' (hapus % dan ubah ke numerik)
+    df['trendPercentage'] = pd.to_numeric(df['trendPercentage'].astype(str).str.replace('%', ''), errors='coerce').fillna(0)
+
+    # Bersihkan kolom 'Harga' (hapus karakter non-numerik)
+    df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
+
+    # Bersihkan kolom 'Penjualan (30 Hari)' (ubah ke numerik)
+    df['Penjualan (30 Hari)'] = pd.to_numeric(df['Penjualan (30 Hari)'], errors='coerce').fillna(0)
+
+    # Bersihkan kolom 'Stok' (ubah ke numerik)
+    df['Stok'] = pd.to_numeric(df['Stok'], errors='coerce').fillna(0)
+
+    # Bersihkan kolom 'Peringkat' (ganti koma jadi titik, hapus karakter non-numerik)
+    df['Peringkat'] = pd.to_numeric(
+        df['Peringkat'].astype(str)
+          .str.replace(',', '.')  # ganti koma ke titik
+          .str.extract(r'(\d+\.?\d*)', expand=False),
+        errors='coerce'
+    ).fillna(0)
+
+    # Bersihkan kolom 'Pendapatan 30 hari' (ubah ke numerik)
+    df['Pendapatan 30 hari'] = pd.to_numeric(df['Pendapatan 30 hari'], errors='coerce').fillna(0)
+
+    # Ubah kolom 'isAd' ke boolean
+    df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya|Yes', case=False, na=False)
+
+    return df
 
 # === OPSI 1: FILTER PRODUK EXTENSION XYRA (SHOPEE) ===
 if option == "Filter Produk Extension Xyra":
@@ -172,7 +201,7 @@ if option == "Filter Produk Extension Xyra":
         st.info("📁 Silakan upload file CSV terlebih dahulu.")
 
 
-# === OPSI 2: FILTER PRODUK SHOPTIK (FULL FINAL + PERBAIKAN KOLOM 'PERINGKAT') ===
+# === OPSI 2: FILTER PRODUK SHOPTIK ===
 elif option == "Filter Produk Shoptik":
     st.title("📱 Filter Produk Shoptik")
     st.markdown("Gunakan filter di bawah ini untuk menganalisis produk dari Shoptik.")
@@ -189,6 +218,16 @@ elif option == "Filter Produk Shoptik":
 
     uploaded_files = st.file_uploader("Masukkan File Format (.csv)", type=["csv"], accept_multiple_files=True)
 
+    def apply_shoptik_filters(df):
+        return df[
+            (df['trendPercentage'] >= trend_percentage_min) &
+            (df['Harga'] >= harga_min_shoptik) &
+            (df['Penjualan (30 Hari)'] >= penjualan_30_hari_min) &
+            (df['Stok'] >= stok_min_shoptik) &
+            (df['Peringkat'] >= rating_min) &
+            (df['Pendapatan 30 hari'] >= pendapatan_30_hari_min)
+        ]
+
     if uploaded_files:
         if st.button("🔎 Analisis Data"):
             with st.spinner("⏳ Menganalisis data Shoptik..."):
@@ -201,7 +240,7 @@ elif option == "Filter Produk Shoptik":
 
                 if not combined_df.empty:
                     total_products = len(combined_df)
-                    combined_df = preprocess_shoptik(combined_df)
+                    combined_df = preprocess_shoptik(combined_df)  # Pastikan fungsi dipanggil setelah didefinisikan
                     filtered_df = apply_shoptik_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
