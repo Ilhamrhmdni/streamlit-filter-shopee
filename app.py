@@ -74,32 +74,45 @@ terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_val
 harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=20000.0)
 komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=1.0)
 komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=1000.0)
+jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=7)
 
-uploaded_files = st.file_uploader("Masukan File Format (.txt)", type=["txt"], accept_multiple_files=True)
+uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
 
 # === FUNGSI PEMBACAAN DAN FILTER ===
 def read_and_validate_file(uploaded_file):
     try:
         content = uploaded_file.read().decode('utf-8')
         df = pd.read_csv(io.StringIO(content), delimiter='\t', on_bad_lines='skip')
-        df['source_file'] = uploaded_file.name
-        if 'Link Produk' not in df.columns:
-            df['Link Produk'] = 'Link tidak tersedia'
-        for col in ['Harga', 'Stock', 'Terjual(Bulanan)', 'Komisi(%)', 'Komisi(Rp)']:
+
+        required_cols = {
+            'Link Produk': 'Link tidak tersedia',
+            'Harga': 0,
+            'Stock': 0,
+            'Terjual(Bulanan)': 0,
+            'Komisi(%)': 0,
+            'Komisi(Rp)': 0,
+            'Jumlah Live': 0
+        }
+
+        for col, default in required_cols.items():
             if col not in df.columns:
-                st.warning(f"Kolom '{col}' tidak ditemukan di {uploaded_file.name}, akan diisi 0.")
-                df[col] = 0
+                df[col] = default
+                st.warning(f"Kolom '{col}' tidak ditemukan di {uploaded_file.name}, akan diisi dengan default.")
+
+        df['source_file'] = uploaded_file.name
         return df
+
     except Exception as e:
         st.error(f"Gagal membaca {uploaded_file.name}: {e}")
         return None
 
 def preprocess_data(df):
-    df['Harga'] = pd.to_numeric(df['Harga'], errors='coerce').fillna(0)
-    df['Stock'] = pd.to_numeric(df['Stock'], errors='coerce').fillna(0)
-    df['Terjual(Bulanan)'] = pd.to_numeric(df['Terjual(Bulanan)'], errors='coerce').fillna(0)
+    df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
+    df['Stock'] = pd.to_numeric(df['Stock'].astype(str), errors='coerce').fillna(0)
+    df['Terjual(Bulanan)'] = pd.to_numeric(df['Terjual(Bulanan)'].astype(str), errors='coerce').fillna(0)
     df['Komisi(%)'] = pd.to_numeric(df['Komisi(%)'].astype(str).str.replace('%', ''), errors='coerce').fillna(0)
-    df['Komisi(Rp)'] = pd.to_numeric(df['Komisi(Rp)'], errors='coerce').fillna(0)
+    df['Komisi(Rp)'] = pd.to_numeric(df['Komisi(Rp)'].astype(str), errors='coerce').fillna(0)
+    df['Jumlah Live'] = pd.to_numeric(df['Jumlah Live'].astype(str), errors='coerce').fillna(0)
     return df
 
 def apply_filters(df):
@@ -108,68 +121,62 @@ def apply_filters(df):
         (df['Terjual(Bulanan)'] >= terjual_min) & 
         (df['Harga'] >= harga_min) & 
         (df['Komisi(%)'] >= komisi_persen_min) & 
-        (df['Komisi(Rp)'] >= komisi_rp_min)
+        (df['Komisi(Rp)'] >= komisi_rp_min) &
+        (df['Jumlah Live'] >= jumlah_live_min)
     ]
 
 # === PROSES DATA ===
-if uploaded_files and st.button("🚀 Proses Data"):
-    with st.spinner("⏳ Memproses data..."):
-        combined_df = pd.DataFrame()
+if uploaded_files:
+    if st.button("🚀 Proses Data"):
+        with st.spinner("⏳ Memproses data..."):
+            combined_df = pd.DataFrame()
 
-        for file in uploaded_files:
-            df = read_and_validate_file(file)
-            if df is not None:
-                combined_df = pd.concat([combined_df, df], ignore_index=True)
+            for file in uploaded_files:
+                df = read_and_validate_file(file)
+                if df is not None:
+                    combined_df = pd.concat([combined_df, df], ignore_index=True)
 
-        if not combined_df.empty:
-            total_links = len(combined_df)
-            combined_df.drop_duplicates(subset=['Link Produk'], inplace=True)
-            deleted_dupes = total_links - len(combined_df)
+            if not combined_df.empty:
+                total_links = len(combined_df)
+                combined_df.drop_duplicates(subset=['Link Produk'], inplace=True)
+                deleted_dupes = total_links - len(combined_df)
 
-            combined_df = preprocess_data(combined_df)
-            filtered_df = apply_filters(combined_df)
-            removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
+                combined_df = preprocess_data(combined_df)
+                filtered_df = apply_filters(combined_df)
+                removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
-            # Menghitung trend dengan pembatasan dua desimal
-            filtered_df['Trend'] = (filtered_df['Terjual(Bulanan)'] / filtered_df['Terjual(Semua)'] * 100).round(2)
+                # Hapus kolom Trend dan Status jika ada
+                filtered_df.drop(columns=['Trend', 'Status'], errors='ignore', inplace=True)
 
-            # Menentukan status
-            def get_status(row):
-                if row['Trend'] >= 10:
-                    return 'Trending🔥'
-                elif row['Trend'] >= 2:
-                    return 'Stabil 👍'
-                elif row['Trend'] < 2 and row['Trend'] > 0:
-                    return 'Menurun ❌'
-                else:
-                    return 'NEW PRODUK '
+                st.success("✅ Data berhasil diproses!")
 
-            filtered_df['Status'] = filtered_df.apply(get_status, axis=1)
+                avg_live = filtered_df['Jumlah Live'].mean().round(1)
 
-            st.success("✅ Data berhasil diproses!")
+                st.markdown(f"""
+                <div class="stat-box">
+                    <div class="section-title">📊 Statistik</div>
+                    <ul>
+                        <li>Total produk diproses: <strong>{total_links}</strong></li>
+                        <li>Produk unik setelah hapus duplikat: <strong>{len(combined_df)}</strong></li>
+                        <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
+                        <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
+                        <li>Duplikat yang dihapus: <strong>{deleted_dupes}</strong></li>
+                        <li>Rata-rata jumlah live: <strong>{avg_live}</strong> hari</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-            <div class="stat-box">
-                <div class="section-title">📊 Statistik</div>
-                <ul>
-                    <li>Total produk diproses: <strong>{total_links}</strong></li>
-                    <li>Produk unik setelah hapus duplikat: <strong>{len(combined_df)}</strong></li>
-                    <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
-                    <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
-                    <li>Duplikat yang dihapus: <strong>{deleted_dupes}</strong></li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
+                st.subheader("✅ Final Produk")
+                st.dataframe(filtered_df)
+                st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
 
-            st.subheader("✅ Final Produk")
-            st.dataframe(filtered_df)
-            st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
-
-            st.subheader("🗑️ Produk Dihapus")
-            st.dataframe(removed_df)
-            st.download_button("⬇️ Download sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
-        else:
-            st.warning("Tidak ada data valid yang bisa diproses.")
+                st.subheader("🗑️ Produk Dihapus")
+                st.dataframe(removed_df)
+                st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
+            else:
+                st.warning("Tidak ada data valid yang bisa diproses.")
+else:
+    st.info("📁 Silakan upload file terlebih dahulu.")
 
 # === FEEDBACK SECTION ===
 show_feedback = st.checkbox("💬 Kritik & Saran", value=False)
@@ -179,17 +186,20 @@ if show_feedback:
     
     if st.button("Kirim"):
         if feedback.strip() != "":
-            bot_token = st.secrets["telegram"]["bot_token"]
-            chat_id = st.secrets["telegram"]["chat_id"]
+            try:
+                bot_token = st.secrets["telegram"]["bot_token"]
+                chat_id = st.secrets["telegram"]["chat_id"]
 
-            url = f"https://api.telegram.org/bot   {bot_token}/sendMessage"
-            data = {"chat_id": chat_id, "text": f"📢 Feedback baru:\n\n{feedback}"}
-            response = requests.post(url, data=data)
+                url = f"https://api.telegram.org/bot {bot_token}/sendMessage"
+                data = {"chat_id": chat_id, "text": f"📢 Feedback baru:\n\n{feedback}"}
+                response = requests.post(url, data=data)
 
-            if response.status_code == 200:
-                st.success("🎉 Terima kasih atas masukannya! Masukan telah terkirim.")
-            else:
-                st.error("❌ Gagal mengirim ke Telegram. Cek token/chat ID.")
+                if response.status_code == 200:
+                    st.success("🎉 Terima kasih atas masukannya! Masukan telah terkirim.")
+                else:
+                    st.error("❌ Gagal mengirim ke Telegram. Cek token/chat ID.")
+            except Exception as e:
+                st.error(f"⚠️ Error saat mengirim feedback: {e}")
         else:
             st.warning("⚠️ Masukan tidak boleh kosong!")
 
