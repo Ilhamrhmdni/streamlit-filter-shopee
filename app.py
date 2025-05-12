@@ -3,7 +3,7 @@ import pandas as pd
 import io
 
 # === SET PAGE CONFIG ===
-st.set_page_config(page_title="Filter Produk & Opsi", layout="wide")
+st.set_page_config(page_title="Filter Produk Shopee", layout="wide")
 
 # === CSS UNTUK SEMUA OPSI ===
 st.markdown("""
@@ -68,10 +68,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === PILIH OPSI DARI SIDEBAR ===
+# === PILIH OPSI ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
-    "Filter Produk Extension Xyra (.txt)", 
-    "Filter Produk Shoptik (.csv)"
+    "Filter Produk Extension Xyra", 
+    "Filter Produk Shoptik"
 ])
 
 # === FUNGSI UMUM ===
@@ -124,9 +124,9 @@ def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan
     return filtered_df
 
 
-# === OPSI 1: FILTER PRODUK EXTENSION XYRA (.TXT FILE) ===
-if option == "Filter Produk Extension Xyra (.txt)":
-    st.title("🛒 Filter Produk Shopee")
+# === OPSI 1: FILTER PRODUK EXTENSION XYRA ===
+if option == "Filter Produk Extension Xyra":
+    st.title("🛒 Filter Produk")
     st.markdown("Gunakan filter di sidebar untuk menyaring produk sesuai kriteria.")
 
     # Input filter
@@ -136,10 +136,10 @@ if option == "Filter Produk Extension Xyra (.txt)":
     harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0)
     komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0)
     komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
-    jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=1)
+    jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=1)
 
     # Upload hanya file .txt
-    uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
 
     def preprocess_data(df):
         df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
@@ -166,7 +166,7 @@ if option == "Filter Produk Extension Xyra (.txt)":
                 combined_df = pd.DataFrame()
 
                 for file in uploaded_files:
-                    df = read_and_validate_file(file, delimiter='\t')  # Untuk .txt gunakan tab sebagai delimiter
+                    df = read_and_validate_file(file, delimiter='\t')
                     if df is not None:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
 
@@ -192,7 +192,7 @@ if option == "Filter Produk Extension Xyra (.txt)":
                             <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
                             <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
                             <li>Duplikat yang dihapus: <strong>{deleted_dupes}</strong></li>
-                            <li>Rata-rata jumlah live: <strong>{avg_live}</strong> hari</li>
+                            <li>Rata-rata jumlah live: <strong>{avg_live}</strong></li>
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
@@ -201,18 +201,18 @@ if option == "Filter Produk Extension Xyra (.txt)":
                     st.dataframe(filtered_df)
                     st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
 
-                    st.subheader("🗑️ Produk Tidak Lolos Filter")
+                    st.subheader("🗑️ Produk Sampah")
                     st.dataframe(removed_df)
                     st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
 
                 else:
                     st.warning("Tidak ada data valid yang bisa diproses.")
     else:
-        st.info("📁 Silakan upload file `.txt` terlebih dahulu.")
+        st.info("📁 Silakan upload file terlebih dahulu.")
 
 
-# === OPSI 2: FILTER PRODUK SHOPTIK (.CSV FILE) ===
-elif option == "Filter Produk Shoptik (.csv)":
+# === OPSI 2: FILTER PRODUK SHOPTIK ===
+elif option == "Filter Produk Shoptik":
     st.title("📱 Filter Produk Shoptik")
     st.markdown("Gunakan filter di bawah ini untuk menganalisis produk dari Shoptik.")
 
@@ -226,7 +226,7 @@ elif option == "Filter Produk Shoptik (.csv)":
     is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False)
 
     # Upload hanya file .csv
-    uploaded_files = st.file_uploader("Masukkan File Format (.csv)", type=["csv"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Masukkan File", type=["csv"], accept_multiple_files=True)
 
     if uploaded_files:
         if st.button("🔎 Analisis Data"):
@@ -288,7 +288,7 @@ elif option == "Filter Produk Shoptik (.csv)":
                 else:
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
-        st.info("📁 Silakan upload file `.csv` untuk Opsi 2.")
+        st.info("📁 Silakan upload file")
 
 
 # === FOOTER ===
