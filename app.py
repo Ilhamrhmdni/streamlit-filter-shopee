@@ -85,8 +85,16 @@ def read_and_validate_file(uploaded_file, delimiter='\t'):
         st.error(f"Gagal membaca {uploaded_file.name}: {e}")
         return None
 
+
 # === FUNGSI PREPROCESSING SHOPTIK ===
 def preprocess_shoptik(df):
+    required_cols = ['productLink', 'Peringkat', 'Penjualan (30 Hari)', 'Harga', 'Stok', 'trendPercentage']
+    for col in required_cols:
+        if col not in df.columns:
+            st.warning(f"Kolom '{col}' tidak ditemukan dalam file.")
+            df[col] = None
+
+    # Bersihkan data
     df['trendPercentage'] = pd.to_numeric(df['trendPercentage'].astype(str).str.replace('%', ''), errors='coerce').fillna(0)
     df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
     df['Penjualan (30 Hari)'] = pd.to_numeric(df['Penjualan (30 Hari)'], errors='coerce').fillna(0)
@@ -96,7 +104,9 @@ def preprocess_shoptik(df):
         errors='coerce'
     ).fillna(0)
     df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya|Yes', case=False, na=False)
+
     return df
+
 
 # === FUNGSI APPLY FILTER SHOPTIK ===
 def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan_30_hari_min, stok_min_shoptik, rating_min):
@@ -114,7 +124,7 @@ def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan
     return filtered_df
 
 
-# === OPSI 1: FILTER PRODUK EXTENSION XYRA (SHOPEE - .TXT FILE) ===
+# === OPSI 1: FILTER PRODUK EXTENSION XYRA (.TXT FILE) ===
 if option == "Filter Produk Extension Xyra (.txt)":
     st.title("🛒 Filter Produk Shopee")
     st.markdown("Gunakan filter di sidebar untuk menyaring produk sesuai kriteria.")
@@ -191,7 +201,7 @@ if option == "Filter Produk Extension Xyra (.txt)":
                     st.dataframe(filtered_df)
                     st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
 
-                    st.subheader("🗑️ Produk Dihapus")
+                    st.subheader("🗑️ Produk Tidak Lolos Filter")
                     st.dataframe(removed_df)
                     st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
 
@@ -230,6 +240,11 @@ elif option == "Filter Produk Shoptik (.csv)":
 
                 if not combined_df.empty:
                     total_products = len(combined_df)
+
+                    # 🚫 Hapus duplikat berdasarkan productLink
+                    combined_df.drop_duplicates(subset=['productLink'], keep='first', inplace=True)
+                    deleted_dupes = total_products - len(combined_df)
+
                     combined_df = preprocess_shoptik(combined_df)
                     filtered_df = apply_shoptik_filters(
                         combined_df,
@@ -242,15 +257,8 @@ elif option == "Filter Produk Shoptik (.csv)":
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
                     # Validasi rata-rata
-                    if not filtered_df.empty and 'Peringkat' in filtered_df.columns:
-                        avg_rating = filtered_df['Peringkat'].mean().round(1)
-                    else:
-                        avg_rating = "Tidak tersedia"
-
-                    if not filtered_df.empty and 'trendPercentage' in filtered_df.columns:
-                        avg_trend = filtered_df['trendPercentage'].mean().round(1)
-                    else:
-                        avg_trend = "Tidak tersedia"
+                    avg_rating = filtered_df['Peringkat'].mean().round(1) if 'Peringkat' in filtered_df.columns and not filtered_df.empty else "Tidak tersedia"
+                    avg_trend = filtered_df['trendPercentage'].mean().round(1) if 'trendPercentage' in filtered_df.columns and not filtered_df.empty else "Tidak tersedia"
 
                     st.success("✅ Analisis selesai!")
 
@@ -259,8 +267,10 @@ elif option == "Filter Produk Shoptik (.csv)":
                         <div class="section-title">📊 Statistik Shoptik</div>
                         <ul>
                             <li>Total produk diproses: <strong>{total_products}</strong></li>
+                            <li>Produk unik setelah hapus duplikat: <strong>{len(combined_df)}</strong></li>
                             <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
                             <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
+                            <li>Duplikat berdasarkan link: <strong>{deleted_dupes}</strong></li>
                             <li>Rata-rata rating: <strong>{avg_rating}</strong></li>
                             <li>Rata-rata tren (%): <strong>{avg_trend}%</strong></li>
                         </ul>
@@ -271,13 +281,15 @@ elif option == "Filter Produk Shoptik (.csv)":
                     st.dataframe(filtered_df)
                     st.download_button("⬇️ Download Data Shoptik", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_shoptik.csv", mime='text/csv')
 
-                    st.subheader("❌ Produk Tidak Lolos Filter")
+                    st.subheader("🗑️ Produk Dihapus (Duplikat)")
                     st.dataframe(removed_df)
+                    st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah_shoptik.csv", mime='text/csv')
 
                 else:
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
         st.info("📁 Silakan upload file `.csv` untuk Opsi 2.")
+
 
 # === FOOTER ===
 st.markdown("""
