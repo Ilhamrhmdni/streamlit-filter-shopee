@@ -73,7 +73,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === JIKA MEMILIH OPSI 1: FILTER PRODUK ===
-if option == "Opsi 1 - Filter Produk":
+if option == "Filter Produk Extension Xyra":
     st.title("🛒 Filter Produk Shopee")
     st.markdown("Gunakan filter di sidebar untuk menyaring produk sesuai kriteria.")
 
@@ -222,7 +222,7 @@ if option == "Opsi 1 - Filter Produk":
 
 
 # === JIKA MEMILIH OPSI 2: TAMBAHAN FITUR BARU ===
-elif option == "Opsi 2 - [Masukkan Fungsi Baru]":
+elif option == "Filter Produk Shoptik":
     st.title("🛠️ Opsi 2: Fitur Baru")
     st.info("Silakan tambahkan fungsi baru di bagian ini sesuai kebutuhan.")
 
