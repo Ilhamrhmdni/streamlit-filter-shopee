@@ -68,13 +68,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === INPUT FILTER DI SIDEBAR ===
-st.sidebar.title("🚬 Mancaster Putihan")
+st.sidebar.title("🚬 Filter Black")
 stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
 terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100)
-harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=20000.0)
-komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=1.0)
-komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=1000.0)
-jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=7)
+harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0)
+komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0)
+komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
+jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=1)
 
 uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
 
