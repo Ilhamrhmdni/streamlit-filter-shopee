@@ -3,7 +3,7 @@ import pandas as pd
 import io
 
 # === SET PAGE CONFIG ===
-st.set_page_config(page_title="Filter Produk & Opsi", layout="wide")
+st.set_page_config(page_title="Filter Black", layout="wide")
 
 # === PILIH OPSI DARI SIDEBAR ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
