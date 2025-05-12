@@ -172,7 +172,7 @@ if option == "Filter Produk Extension Xyra":
         st.info("📁 Silakan upload file CSV terlebih dahulu.")
 
 
-# === OPSI 2: FILTER PRODUK SHOPTIK (FULL FINAL) ===
+# === OPSI 2: FILTER PRODUK SHOPTIK (FULL FINAL + PERBAIKAN KOLOM 'PERINGKAT') ===
 elif option == "Filter Produk Shoptik":
     st.title("📱 Filter Produk Shoptik")
     st.markdown("Gunakan filter di bawah ini untuk menganalisis produk dari Shoptik.")
@@ -194,7 +194,15 @@ elif option == "Filter Produk Shoptik":
         df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
         df['Penjualan (30 Hari)'] = pd.to_numeric(df['Penjualan (30 Hari)'], errors='coerce').fillna(0)
         df['Stok'] = pd.to_numeric(df['Stok'], errors='coerce').fillna(0)
-        df['Peringkat'] = pd.to_numeric(df['Peringkat'], errors='coerce').fillna(0)
+
+        # ✅ Perbaikan kolom 'Peringkat'
+        df['Peringkat'] = pd.to_numeric(
+            df['Peringkat'].astype(str)
+              .str.replace(',', '.')  # ganti koma ke titik
+              .str.extract(r'(\d+\.?\d*)', expand=False),
+            errors='coerce'
+        ).fillna(0)
+
         df['Pendapatan 30 hari'] = pd.to_numeric(df['Pendapatan 30 hari'], errors='coerce').fillna(0)
         df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya', case=False, na=False)
         return df
@@ -227,6 +235,10 @@ elif option == "Filter Produk Shoptik":
 
                     st.success("✅ Analisis selesai!")
 
+                    avg_rating = filtered_df['Peringkat'].mean().round(1)
+                    avg_income = int(filtered_df['Pendapatan 30 hari'].mean())
+                    avg_trend = filtered_df['trendPercentage'].mean().round(1)
+
                     st.markdown(f"""
                     <div class="stat-box">
                         <div class="section-title">📊 Statistik Shoptik</div>
@@ -234,9 +246,9 @@ elif option == "Filter Produk Shoptik":
                             <li>Total produk diproses: <strong>{total_products}</strong></li>
                             <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
                             <li>Produk tidak lolos filter: <strong>{len(removed_df)}</strong></li>
-                            <li>Rata-rata rating: <strong>{filtered_df['Peringkat'].mean().round(1)}</strong></li>
-                            <li>Rata-rata pendapatan 30 hari: <strong>Rp{filtered_df['Pendapatan 30 hari'].mean().round(0).astype(int).apply(lambda x: f'{x:,}').iloc[0]}</strong></li>
-                            <li>Rata-rata tren (%): <strong>{filtered_df['trendPercentage'].mean().round(1)}%</strong></li>
+                            <li>Rata-rata rating: <strong>{avg_rating}</strong></li>
+                            <li>Rata-rata pendapatan 30 hari: <strong>Rp{avg_income:,}</strong></li>
+                            <li>Rata-rata tren (%): <strong>{avg_trend}%</strong></li>
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
@@ -252,7 +264,8 @@ elif option == "Filter Produk Shoptik":
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
         st.info("📁 Silakan upload file CSV untuk Opsi 2.")
-        
+
+
 # === FOOTER ===
 st.markdown("""
     <div class="footer">
