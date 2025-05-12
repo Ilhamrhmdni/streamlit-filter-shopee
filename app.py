@@ -3,11 +3,11 @@ import pandas as pd
 import io
 import requests
 
-# === SET PAGE CONFIG (HARUS DI ATAS SEKALI) ===
+# === SET PAGE CONFIG ===
 st.set_page_config(page_title="Filter Produk & Opsi", layout="wide")
 
 # === PILIH OPSI DARI SIDEBAR ===
-option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", ["Opsi 1 - Filter Produk", "Opsi 2 - [Masukkan Fungsi Baru]"])
+option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", ["Filter Produk Extension Xyra", "Filter Produk Shoptik"])
 
 # === CSS UNTUK SEMUA OPSI ===
 st.markdown("""
