@@ -222,7 +222,7 @@ elif option == "Filter Produk Shoptik":
     harga_min_shoptik = st.sidebar.number_input("Harga minimum", min_value=0.0, value=0.0)
     penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=100)
     stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=10)
-    rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.5, step=0.1)
+    rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
     is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False)
 
     # Upload hanya file .csv
