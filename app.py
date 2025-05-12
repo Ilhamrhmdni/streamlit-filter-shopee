@@ -84,6 +84,7 @@ def read_and_validate_file(uploaded_file):
         content = uploaded_file.read().decode('utf-8')
         df = pd.read_csv(io.StringIO(content), delimiter='\t', on_bad_lines='skip')
 
+        # Kolom wajib dan nilai default jika tidak ditemukan
         required_cols = {
             'Link Produk': 'Link tidak tersedia',
             'Harga': 0,
@@ -91,7 +92,7 @@ def read_and_validate_file(uploaded_file):
             'Terjual(Bulanan)': 0,
             'Komisi(%)': 0,
             'Komisi(Rp)': 0,
-            'Jumlah Live': 0
+            'Jumlah Live': 0  # ← Dibuat otomatis jika tidak ada
         }
 
         for col, default in required_cols.items():
