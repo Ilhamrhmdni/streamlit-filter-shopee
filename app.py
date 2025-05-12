@@ -5,68 +5,9 @@ import io
 # === SET PAGE CONFIG ===
 st.set_page_config(page_title="Filter Produk Shopee", layout="wide")
 
-# === CSS UNTUK SEMUA OPSI ===
-st.markdown("""
-    <style>
-        body {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-        }
-        .reportview-container .main .block-container {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-        }
-        .sidebar .sidebar-content {
-            background-color: #2a2a2a;
-        }
-        .section-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
-            color: #99ddff;
-        }
-        .stat-box {
-            background-color: #333;
-            padding: 1em;
-            border-radius: 10px;
-            margin-bottom: 1em;
-            border: 1px solid #99ddff;
-            color: #e0e0e0;
-        }
-        .stat-box ul { padding-left: 1.2em; }
-        .stat-box li { margin-bottom: 0.4em; }
-        .stButton>button {
-            background-color: #99ddff;
-            color: black;
-            border: none;
-            padding: 0.5em 1em;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .stButton>button:hover {
-            transform: scale(1.05);
-        }
-        .stTextInput>div>input, .stNumberInput>div>input {
-            background-color: #2e2e2e;
-            color: #e0e0e0;
-            border: 1px solid #99ddff;
-        }
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #1e1e1e;
-            color: #ccc;
-            text-align: center;
-            padding: 1em;
-            font-size: 0.9em;
-            font-style: italic;
-            border-top: 1px solid #99ddff;
-        }
-    </style>
-""", unsafe_allow_html=True)
+# === LOAD CSS TERPISAH ===
+with open("style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # === PILIH OPSI ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
@@ -85,7 +26,6 @@ def read_and_validate_file(uploaded_file, delimiter='\t'):
         st.error(f"Gagal membaca {uploaded_file.name}: {e}")
         return None
 
-
 # === FUNGSI PREPROCESSING SHOPTIK ===
 def preprocess_shoptik(df):
     required_cols = ['productLink', 'Peringkat', 'Penjualan (30 Hari)', 'Harga', 'Stok', 'trendPercentage']
@@ -93,7 +33,6 @@ def preprocess_shoptik(df):
         if col not in df.columns:
             st.warning(f"Kolom '{col}' tidak ditemukan dalam file.")
             df[col] = None
-
     # Bersihkan data
     df['trendPercentage'] = pd.to_numeric(df['trendPercentage'].astype(str).str.replace('%', ''), errors='coerce').fillna(0)
     df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
@@ -104,9 +43,7 @@ def preprocess_shoptik(df):
         errors='coerce'
     ).fillna(0)
     df['isAd'] = df['isAd'].astype(str).str.contains('True|1|Ya|Yes', case=False, na=False)
-
     return df
-
 
 # === FUNGSI APPLY FILTER SHOPTIK ===
 def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan_30_hari_min, stok_min_shoptik, rating_min):
@@ -117,12 +54,9 @@ def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan
         (df['Stok'] >= stok_min_shoptik) &
         (df['Peringkat'] >= rating_min)
     ]
-    
     if is_ad:
         filtered_df = filtered_df[filtered_df['isAd']]
-    
     return filtered_df
-
 
 # === OPSI 1: FILTER PRODUK EXTENSION XYRA ===
 if option == "Filter Produk Extension Xyra":
@@ -164,25 +98,19 @@ if option == "Filter Produk Extension Xyra":
         if st.button("🚀 Proses Data"):
             with st.spinner("⏳ Memproses data..."):
                 combined_df = pd.DataFrame()
-
                 for file in uploaded_files:
                     df = read_and_validate_file(file, delimiter='\t')
                     if df is not None:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
-
                 if not combined_df.empty:
                     total_links = len(combined_df)
                     combined_df.drop_duplicates(subset=['Link Produk'], inplace=True)
                     deleted_dupes = total_links - len(combined_df)
-
                     combined_df = preprocess_data(combined_df)
                     filtered_df = apply_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-
                     avg_live = filtered_df['Jumlah Live'].mean().round(1)
-
                     st.success("✅ Data berhasil diproses!")
-
                     st.markdown(f"""
                     <div class="stat-box">
                         <div class="section-title">📊 Statistik</div>
@@ -196,20 +124,16 @@ if option == "Filter Produk Extension Xyra":
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
-
                     st.subheader("✅ Final Produk")
                     st.dataframe(filtered_df)
                     st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
-
                     st.subheader("🗑️ Produk Sampah")
                     st.dataframe(removed_df)
                     st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
-
                 else:
                     st.warning("Tidak ada data valid yang bisa diproses.")
     else:
         st.info("📁 Silakan upload file terlebih dahulu.")
-
 
 # === OPSI 2: FILTER PRODUK SHOPTIK ===
 elif option == "Filter Produk Shoptik":
@@ -232,19 +156,15 @@ elif option == "Filter Produk Shoptik":
         if st.button("🔎 Analisis Data"):
             with st.spinner("⏳ Menganalisis data Shoptik..."):
                 combined_df = pd.DataFrame()
-
                 for file in uploaded_files:
                     df = read_and_validate_file(file, delimiter=',')  # Untuk .csv gunakan koma
                     if df is not None:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
-
                 if not combined_df.empty:
                     total_products = len(combined_df)
-
                     # 🚫 Hapus duplikat berdasarkan productLink
                     combined_df.drop_duplicates(subset=['productLink'], keep='first', inplace=True)
                     deleted_dupes = total_products - len(combined_df)
-
                     combined_df = preprocess_shoptik(combined_df)
                     filtered_df = apply_shoptik_filters(
                         combined_df,
@@ -255,13 +175,10 @@ elif option == "Filter Produk Shoptik":
                         rating_min
                     )
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-
                     # Validasi rata-rata
                     avg_rating = filtered_df['Peringkat'].mean().round(1) if 'Peringkat' in filtered_df.columns and not filtered_df.empty else "Tidak tersedia"
                     avg_trend = filtered_df['trendPercentage'].mean().round(1) if 'trendPercentage' in filtered_df.columns and not filtered_df.empty else "Tidak tersedia"
-
                     st.success("✅ Analisis selesai!")
-
                     st.markdown(f"""
                     <div class="stat-box">
                         <div class="section-title">📊 Statistik Shoptik</div>
@@ -276,20 +193,16 @@ elif option == "Filter Produk Shoptik":
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
-
                     st.subheader("✅ Produk Lolos Filter")
                     st.dataframe(filtered_df)
                     st.download_button("⬇️ Download Data Shoptik", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_shoptik.csv", mime='text/csv')
-
                     st.subheader("🗑️ Produk Dihapus (Duplikat)")
                     st.dataframe(removed_df)
                     st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah_shoptik.csv", mime='text/csv')
-
                 else:
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
         st.info("📁 Silakan upload file")
-
 
 # === FOOTER ===
 st.markdown("""
