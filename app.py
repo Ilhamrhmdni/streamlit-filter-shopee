@@ -84,7 +84,6 @@ def read_and_validate_file(uploaded_file):
         content = uploaded_file.read().decode('utf-8')
         df = pd.read_csv(io.StringIO(content), delimiter='\t', on_bad_lines='skip')
 
-        # Kolom wajib dan nilai default jika tidak ditemukan
         required_cols = {
             'Link Produk': 'Link tidak tersedia',
             'Harga': 0,
@@ -92,7 +91,7 @@ def read_and_validate_file(uploaded_file):
             'Terjual(Bulanan)': 0,
             'Komisi(%)': 0,
             'Komisi(Rp)': 0,
-            'Jumlah Live': 0  # ← Dibuat otomatis jika tidak ada
+            'Jumlah Live': 0
         }
 
         for col, default in required_cols.items():
@@ -108,12 +107,12 @@ def read_and_validate_file(uploaded_file):
         return None
 
 def preprocess_data(df):
-    df['Harga'] = pd.to_numeric(df['Harga'], errors='coerce').fillna(0)
-    df['Stock'] = pd.to_numeric(df['Stock'], errors='coerce').fillna(0)
-    df['Terjual(Bulanan)'] = pd.to_numeric(df['Terjual(Bulanan)'], errors='coerce').fillna(0)
+    df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
+    df['Stock'] = pd.to_numeric(df['Stock'].astype(str), errors='coerce').fillna(0)
+    df['Terjual(Bulanan)'] = pd.to_numeric(df['Terjual(Bulanan)'].astype(str), errors='coerce').fillna(0)
     df['Komisi(%)'] = pd.to_numeric(df['Komisi(%)'].astype(str).str.replace('%', ''), errors='coerce').fillna(0)
-    df['Komisi(Rp)'] = pd.to_numeric(df['Komisi(Rp)'], errors='coerce').fillna(0)
-    df['Jumlah Live'] = pd.to_numeric(df['Jumlah Live'], errors='coerce').fillna(0)
+    df['Komisi(Rp)'] = pd.to_numeric(df['Komisi(Rp)'].astype(str), errors='coerce').fillna(0)
+    df['Jumlah Live'] = pd.to_numeric(df['Jumlah Live'].astype(str), errors='coerce').fillna(0)
     return df
 
 def apply_filters(df):
