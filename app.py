@@ -126,7 +126,7 @@ if option == "Filter Produk Extension Xyra":
     komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
     jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live (hari)", min_value=0, value=1)
 
-    uploaded_files = st.file_uploader("Masukkan File Format (.csv)", type=["csv"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Masukkan File Format (.txt)", type=["txt"], accept_multiple_files=True)
 
     def preprocess_data(df):
         df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^0-9.]', '', regex=True), errors='coerce').fillna(0)
@@ -153,7 +153,7 @@ if option == "Filter Produk Extension Xyra":
                 combined_df = pd.DataFrame()
 
                 for file in uploaded_files:
-                    df = read_and_validate_file(file)
+                    df = read_and_validate_txt(file)  # Gunakan fungsi untuk membaca file .txt
                     if df is not None:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
 
@@ -195,7 +195,7 @@ if option == "Filter Produk Extension Xyra":
                 else:
                     st.warning("Tidak ada data valid yang bisa diproses.")
     else:
-        st.info("📁 Silakan upload file CSV terlebih dahulu.")
+        st.info("📁 Silakan upload file TXT terlebih dahulu.")
 
 
 # === OPSI 2: FILTER PRODUK SHOPTIK ===
