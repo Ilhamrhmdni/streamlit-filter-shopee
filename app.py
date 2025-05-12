@@ -1,77 +1,81 @@
 import streamlit as st
 import pandas as pd
 import io
-import requests  # Pastikan requests sudah terinstal
+import requests
 
-# === Pilih Opsi dari Sidebar ===
+# === SET PAGE CONFIG (HARUS DI ATAS SEKALI) ===
+st.set_page_config(page_title="Filter Produk & Opsi", layout="wide")
+
+# === PILIH OPSI DARI SIDEBAR ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", ["Opsi 1 - Filter Produk", "Opsi 2 - [Masukkan Fungsi Baru]"])
 
-# === Jika Pengguna Memilih Opsi 1: Filter Produk ===
-if option == "Opsi 1 - Filter Produk":
-    st.set_page_config(page_title="Filter Produk", layout="wide")
+# === CSS UNTUK SEMUA OPSI ===
+st.markdown("""
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        .reportview-container .main .block-container {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        .sidebar .sidebar-content {
+            background-color: #2a2a2a;
+        }
+        .section-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            color: #99ddff;
+        }
+        .stat-box {
+            background-color: #333;
+            padding: 1em;
+            border-radius: 10px;
+            margin-bottom: 1em;
+            border: 1px solid #99ddff;
+            color: #e0e0e0;
+        }
+        .stat-box ul { padding-left: 1.2em; }
+        .stat-box li { margin-bottom: 0.4em; }
+        .stButton>button {
+            background-color: #99ddff;
+            color: black;
+            border: none;
+            padding: 0.5em 1em;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .stButton>button:hover {
+            transform: scale(1.05);
+        }
+        .stTextInput>div>input, .stNumberInput>div>input {
+            background-color: #2e2e2e;
+            color: #e0e0e0;
+            border: 1px solid #99ddff;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #1e1e1e;
+            color: #ccc;
+            text-align: center;
+            padding: 1em;
+            font-size: 0.9em;
+            font-style: italic;
+            border-top: 1px solid #99ddff;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-    # === CSS untuk tema gelap tetap ===
-    st.markdown("""
-        <style>
-            body {
-                background-color: #1e1e1e;
-                color: #e0e0e0;
-            }
-            .reportview-container .main .block-container {
-                background-color: #1e1e1e;
-                color: #e0e0e0;
-            }
-            .sidebar .sidebar-content {
-                background-color: #2a2a2a;
-            }
-            .section-title {
-                font-size: 1.4em;
-                font-weight: bold;
-                margin-top: 1.5em;
-                margin-bottom: 0.5em;
-                color: #99ddff;
-            }
-            .stat-box {
-                background-color: #333;
-                padding: 1em;
-                border-radius: 10px;
-                margin-bottom: 1em;
-                border: 1px solid #99ddff;
-                color: #e0e0e0;
-            }
-            .stat-box ul { padding-left: 1.2em; }
-            .stat-box li { margin-bottom: 0.4em; }
-            .stButton>button {
-                background-color: #99ddff;
-                color: black;
-                border: none;
-                padding: 0.5em 1em;
-                border-radius: 4px;
-                font-weight: bold;
-            }
-            .stButton>button:hover {
-                transform: scale(1.05);
-            }
-            .stTextInput>div>input, .stNumberInput>div>input {
-                background-color: #2e2e2e;
-                color: #e0e0e0;
-                border: 1px solid #99ddff;
-            }
-            .footer {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background-color: #1e1e1e;
-                color: #ccc;
-                text-align: center;
-                padding: 1em;
-                font-size: 0.9em;
-                font-style: italic;
-                border-top: 1px solid #99ddff;
-            }
-        </style>
-    """, unsafe_allow_html=True)
+# === JIKA MEMILIH OPSI 1: FILTER PRODUK ===
+if option == "Opsi 1 - Filter Produk":
+    st.title("🛒 Filter Produk Shopee")
+    st.markdown("Gunakan filter di sidebar untuk menyaring produk sesuai kriteria.")
 
     # === INPUT FILTER DI SIDEBAR ===
     st.sidebar.title("🚬 Filter Black")
@@ -217,18 +221,18 @@ if option == "Opsi 1 - Filter Produk":
     """, unsafe_allow_html=True)
 
 
-# === Opsi 2: Tempat untuk Fungsi Baru (Misalnya Analisis Lain, Upload CSV, dll.) ===
+# === JIKA MEMILIH OPSI 2: TAMBAHAN FITUR BARU ===
 elif option == "Opsi 2 - [Masukkan Fungsi Baru]":
     st.title("🛠️ Opsi 2: Fitur Baru")
     st.info("Silakan tambahkan fungsi baru di bagian ini sesuai kebutuhan.")
 
-    # Contoh placeholder
-    st.write("Ini adalah halaman Opsi 2. Kamu bisa menambahkan fitur lain seperti:")
+    st.write("Ini adalah halaman opsional. Kamu bisa gunakan untuk:")
     st.markdown("""
     - Upload file CSV/Excel
-    - Analisis statistik tambahan
+    - Analisis tambahan
     - Prediksi penjualan
     - Visualisasi grafik
+    - Tools lainnya
     """)
 
-    # Kamu bisa ganti bagian ini dengan logika apapun
+    st.markdown("Hubungi developer atau edit file ini untuk menambahkan logika di bagian ini.")
