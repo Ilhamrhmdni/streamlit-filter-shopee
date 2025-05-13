@@ -71,6 +71,7 @@ if option == "Filter Produk Extension Xyra":
     komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0)
     komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
     jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=1)
+    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=10)
 
     # Upload hanya file .txt
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
@@ -85,14 +86,15 @@ if option == "Filter Produk Extension Xyra":
         return df
 
     def apply_filters(df):
-        return df[
-            (df['Stock'] >= stok_min) &
-            (df['Terjual(Bulanan)'] >= terjual_min) &
-            (df['Harga'] >= harga_min) &
-            (df['Komisi(%)'] >= komisi_persen_min) &
-            (df['Komisi(Rp)'] >= komisi_rp_min) &
-            (df['Jumlah Live'] >= jumlah_live_min)
-        ]
+    return df[
+        (df['Stock'] >= stok_min) &
+        (df['Terjual(Bulanan)'] >= terjual_min) &
+        (df['Harga'] >= harga_min) &
+        (df['Komisi(%)'] >= komisi_persen_min) &
+        (df['Komisi(Rp)'] >= komisi_rp_min) &
+        (df['Jumlah Live'] >= jumlah_live_min) &
+        (df['Jumlah Live'] <= jumlah_live_max)
+    ]
 
     if uploaded_files:
         if st.button("🚀 Proses Data"):
