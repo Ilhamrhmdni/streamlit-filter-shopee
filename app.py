@@ -86,15 +86,15 @@ if option == "Filter Produk Extension Xyra":
         return df
 
     def apply_filters(df):
-    return df[
-        (df['Stock'] >= stok_min) &
-        (df['Terjual(Bulanan)'] >= terjual_min) &
-        (df['Harga'] >= harga_min) &
-        (df['Komisi(%)'] >= komisi_persen_min) &
-        (df['Komisi(Rp)'] >= komisi_rp_min) &
-        (df['Jumlah Live'] >= jumlah_live_min) &
-        (df['Jumlah Live'] <= jumlah_live_max)
-    ]
+        return df[
+            (df['Stock'] >= stok_min) &
+            (df['Terjual(Bulanan)'] >= terjual_min) &
+            (df['Harga'] >= harga_min) &
+            (df['Komisi(%)'] >= komisi_persen_min) &
+            (df['Komisi(Rp)'] >= komisi_rp_min) &
+            (df['Jumlah Live'] >= jumlah_live_min) &
+            (df['Jumlah Live'] <= jumlah_live_max)
+        ]
 
     if uploaded_files:
         if st.button("🚀 Proses Data"):
