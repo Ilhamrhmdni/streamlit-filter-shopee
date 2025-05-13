@@ -61,7 +61,7 @@ def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan
 # === OPSI 1: FILTER PRODUK EXTENSION XYRA ===
 if option == "Filter Produk Extension Xyra":
     st.title("🛒 Filter Produk Extension Xyra")
-    st.markdown("Gunakan filter di sidebar untuk menyaring produk sesuai kriteria.")
+    st.markdown("Hanya Support File Export Extensi Xyra v4.2.")
 
     # Input filter
     st.sidebar.title("🚬 Filter Black")
