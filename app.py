@@ -198,7 +198,7 @@ elif option == "Filter Produk Shoptik":
                     st.subheader("✅ Produk Lolos Filter")
                     st.dataframe(filtered_df)
                     st.download_button("⬇️ Download Data Shoptik", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_shoptik.csv", mime='text/csv')
-                    st.subheader("🗑️ Produk Dihapus (Duplikat)")
+                    st.subheader("🗑️ Produk Dihapus")
                     st.dataframe(removed_df)
                     st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah_shoptik.csv", mime='text/csv')
                 else:
