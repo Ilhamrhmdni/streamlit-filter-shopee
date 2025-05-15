@@ -93,7 +93,7 @@ if option == "Filter Produk Extension Xyra":
         jumlah_live_max = st.number_input(
             "Batas maksimal jumlah live",
             min_value=0,
-            value=100,
+            value=0,
             help="Maksimum jumlah live listing untuk produk"
         )
 
