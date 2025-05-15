@@ -71,7 +71,7 @@ if option == "Filter Produk Extension Xyra":
     komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0)
     komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
     jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=0)
-    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=0)
+    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=100)
 
     # Upload hanya file .txt
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
@@ -97,6 +97,9 @@ if option == "Filter Produk Extension Xyra":
         ]
 
     if uploaded_files:
+        custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_produk")
+        custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="sampah")
+
         if st.button("🚀 Proses Data"):
             with st.spinner("⏳ Memproses data..."):
                 combined_df = pd.DataFrame()
@@ -111,7 +114,9 @@ if option == "Filter Produk Extension Xyra":
                     combined_df = preprocess_data(combined_df)
                     filtered_df = apply_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-                    avg_live = filtered_df['Jumlah Live'].mean().round(1)
+
+                    avg_live = round(filtered_df['Jumlah Live'].mean(), 1) if not filtered_df.empty else 0
+
                     st.success("✅ Data berhasil diproses!")
                     st.markdown(f"""
                     <div class="stat-box">
@@ -126,12 +131,24 @@ if option == "Filter Produk Extension Xyra":
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
+
                     st.subheader("✅ Final Produk")
                     st.dataframe(filtered_df)
-                    st.download_button("⬇️ Download Data Produk", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_produk.csv", mime='text/csv')
+                    st.download_button(
+                        "⬇️ Download Data Produk",
+                        filtered_df.to_csv(index=False).encode('utf-8'),
+                        file_name=f"{custom_filename}.csv",
+                        mime='text/csv'
+                    )
+
                     st.subheader("🗑️ Produk Sampah")
                     st.dataframe(removed_df)
-                    st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah.csv", mime='text/csv')
+                    st.download_button(
+                        "⬇️ Download Sampah",
+                        removed_df.to_csv(index=False).encode('utf-8'),
+                        file_name=f"{custom_filename_sampah}.csv",
+                        mime='text/csv'
+                    )
                 else:
                     st.warning("Tidak ada data valid yang bisa diproses.")
     else:
@@ -155,6 +172,9 @@ elif option == "Filter Produk Shoptik":
     uploaded_files = st.file_uploader("Masukkan File", type=["csv"], accept_multiple_files=True)
 
     if uploaded_files:
+        custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_shoptik")
+        custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="sampah_shoptik")
+
         if st.button("🔎 Analisis Data"):
             with st.spinner("⏳ Menganalisis data Shoptik..."):
                 combined_df = pd.DataFrame()
@@ -164,7 +184,6 @@ elif option == "Filter Produk Shoptik":
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
                 if not combined_df.empty:
                     total_products = len(combined_df)
-                    # 🚫 Hapus duplikat berdasarkan productLink
                     combined_df.drop_duplicates(subset=['productLink'], keep='first', inplace=True)
                     deleted_dupes = total_products - len(combined_df)
                     combined_df = preprocess_shoptik(combined_df)
@@ -177,9 +196,10 @@ elif option == "Filter Produk Shoptik":
                         rating_min
                     )
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-                    # Validasi rata-rata
-                    avg_rating = filtered_df['Peringkat'].mean().round(1) if 'Peringkat' in filtered_df.columns and not filtered_df.empty else "Tidak tersedia"
-                    avg_trend = filtered_df['trendPercentage'].mean().round(1) if 'trendPercentage' in filtered_df.columns and not filtered_df.empty else "Tidak tersedia"
+
+                    avg_rating = round(filtered_df['Peringkat'].mean(), 1) if not filtered_df.empty else 0
+                    avg_trend = round(filtered_df['trendPercentage'].mean(), 1) if not filtered_df.empty else 0
+
                     st.success("✅ Analisis selesai!")
                     st.markdown(f"""
                     <div class="stat-box">
@@ -195,12 +215,24 @@ elif option == "Filter Produk Shoptik":
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
+
                     st.subheader("✅ Produk Lolos Filter")
                     st.dataframe(filtered_df)
-                    st.download_button("⬇️ Download Data Shoptik", filtered_df.to_csv(index=False).encode('utf-8'), file_name="data_shoptik.csv", mime='text/csv')
+                    st.download_button(
+                        "⬇️ Download Data Shoptik",
+                        filtered_df.to_csv(index=False).encode('utf-8'),
+                        file_name=f"{custom_filename}.csv",
+                        mime='text/csv'
+                    )
+
                     st.subheader("🗑️ Produk Dihapus")
                     st.dataframe(removed_df)
-                    st.download_button("⬇️ Download Sampah", removed_df.to_csv(index=False).encode('utf-8'), file_name="sampah_shoptik.csv", mime='text/csv')
+                    st.download_button(
+                        "⬇️ Download Sampah",
+                        removed_df.to_csv(index=False).encode('utf-8'),
+                        file_name=f"{custom_filename_sampah}.csv",
+                        mime='text/csv'
+                    )
                 else:
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
