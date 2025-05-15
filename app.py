@@ -7,21 +7,17 @@ import re
 st.set_page_config(page_title="Filter Produk Shopee", layout="wide")
 
 # === PANGGIL CSS ===
-try:
-    with open("style.css") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-except FileNotFoundError:
-    st.warning("File style.css tidak ditemukan. Styling mungkin tidak berjalan.")
+with open("style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+def sanitize_filename(name):
+    return re.sub(r'[\\/*?:"<>|]', '', name)
 
 # === PILIH OPSI ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
-    "Filter Produk Extension Xyra",
+    "Filter Produk Extension Xyra", 
     "Filter Produk Shoptik"
 ])
-
-def sanitize_filename(name):
-    """Hapus karakter ilegal dari nama file"""
-    return re.sub(r'[\\/*?:"<>|]', '', name)
 
 # === FUNGSI UMUM ===
 def read_and_validate_file(uploaded_file, delimiter='\t'):
@@ -73,20 +69,21 @@ if option == "Filter Produk Extension Xyra":
 
     # Input filter
     st.sidebar.title("🚬 Filter Black")
-    col1, col2 = st.sidebar.columns(2)
-    with col1:
-        stok_min = st.number_input("Batas minimal stok", min_value=0, value=10, help="Hanya produk dengan stok lebih besar dari nilai ini")
-    with col2:
-        stok_max = st.number_input("Batas maksimal stok", min_value=0, value=100, help="Hanya produk dengan stok kurang dari nilai ini")
+    stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10,
+                                       help="Produk dengan stok kurang dari nilai ini akan diabaikan")
+    terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100,
+                                         help="Produk dengan penjualan bulanan kurang dari nilai ini tidak akan diproses")
+    harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0,
+                                       help="Hanya produk di atas harga ini yang akan diproses")
+    komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0,
+                                               help="Produk dengan komisi kurang dari persentase ini tidak akan diproses")
+    komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0,
+                                           help="Produk dengan komisi kurang dari nilai ini tidak akan diproses")
+    jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=0,
+                                             help="Minimum jumlah live listing untuk produk")
+    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=100,
+                                             help="Maksimum jumlah live listing untuk produk")
 
-    terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100, help="Minimal jumlah terjual per bulan")
-    harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0, help="Produk dengan harga di atas nilai ini")
-    komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0, help="Komisi afiliasi minimum (%)")
-    komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0, help="Komisi afiliasi minimum (Rp)")
-    jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=0, help="Minimal jumlah live listing")
-    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=100, help="Maksimal jumlah live listing")
-
-    # Upload hanya file .txt
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
 
     def preprocess_data(df):
@@ -101,7 +98,6 @@ if option == "Filter Produk Extension Xyra":
     def apply_filters(df):
         return df[
             (df['Stock'] >= stok_min) &
-            (df['Stock'] <= stok_max) &
             (df['Terjual(Bulanan)'] >= terjual_min) &
             (df['Harga'] >= harga_min) &
             (df['Komisi(%)'] >= komisi_persen_min) &
@@ -132,6 +128,7 @@ if option == "Filter Produk Extension Xyra":
                     avg_live = round(filtered_df['Jumlah Live'].mean(), 1) if not filtered_df.empty else 0
 
                     st.success("✅ Data berhasil diproses!")
+
                     st.markdown(f"""
                     <div class="stat-box">
                         <div class="section-title">📊 Statistik</div>
@@ -175,14 +172,18 @@ elif option == "Filter Produk Shoptik":
 
     # Sidebar filter tambahan
     st.sidebar.title("⚙️ Filter Shoptik")
-    trend_percentage_min = st.sidebar.number_input("Tren minimum (%)", min_value=0.0, value=50.0, help="Minimum tren persentase")
-    harga_min_shoptik = st.sidebar.number_input("Harga minimum", min_value=0.0, value=0.0, help="Harga produk minimum")
-    penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=100, help="Penjualan minimum dalam 30 hari")
-    stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=10, help="Minimal stok produk")
-    rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1, help="Rating minimum produk")
+    trend_percentage_min = st.sidebar.number_input("Tren minimum (%)", min_value=0.0, value=50.0,
+                                                 help="Persentase tren minimum untuk produk")
+    harga_min_shoptik = st.sidebar.number_input("Harga minimum", min_value=0.0, value=0.0,
+                                              help="Hanya produk dengan harga di atas nilai ini yang akan diproses")
+    penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=100,
+                                                  help="Produk dengan penjualan kurang dari nilai ini tidak lolos")
+    stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=10,
+                                             help="Produk dengan stok di bawah nilai ini tidak lolos")
+    rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1,
+                                   help="Rating minimum produk")
     is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False)
 
-    # Upload hanya file .csv
     uploaded_files = st.file_uploader("Masukkan File", type=["csv"], accept_multiple_files=True)
 
     if uploaded_files:
@@ -193,7 +194,7 @@ elif option == "Filter Produk Shoptik":
             with st.spinner("⏳ Menganalisis data Shoptik..."):
                 combined_df = pd.DataFrame()
                 for file in uploaded_files:
-                    df = read_and_validate_file(file, delimiter=',')  # Untuk .csv gunakan koma
+                    df = read_and_validate_file(file, delimiter=',')
                     if df is not None:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
                 if not combined_df.empty:
