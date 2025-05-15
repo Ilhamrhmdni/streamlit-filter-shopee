@@ -15,9 +15,13 @@ except FileNotFoundError:
 
 # === PILIH OPSI ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
-    "Filter Produk Extension Xyra", 
+    "Filter Produk Extension Xyra",
     "Filter Produk Shoptik"
 ])
+
+def sanitize_filename(name):
+    """Hapus karakter ilegal dari nama file"""
+    return re.sub(r'[\\/*?:"<>|]', '', name)
 
 # === FUNGSI UMUM ===
 def read_and_validate_file(uploaded_file, delimiter='\t'):
@@ -29,10 +33,6 @@ def read_and_validate_file(uploaded_file, delimiter='\t'):
     except Exception as e:
         st.error(f"Gagal membaca {uploaded_file.name}: {e}")
         return None
-
-def sanitize_filename(name):
-    """Hapus karakter ilegal dari nama file"""
-    return re.sub(r'[\\/*?:"<>|]', '', name)
 
 # === FUNGSI PREPROCESSING SHOPTIK ===
 def preprocess_shoptik(df):
@@ -73,13 +73,18 @@ if option == "Filter Produk Extension Xyra":
 
     # Input filter
     st.sidebar.title("🚬 Filter Black")
-    stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10)
-    terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100)
-    harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0)
-    komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0)
-    komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=800.0)
-    jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=0)
-    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=0)
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        stok_min = st.number_input("Batas minimal stok", min_value=0, value=10, help="Hanya produk dengan stok lebih besar dari nilai ini")
+    with col2:
+        stok_max = st.number_input("Batas maksimal stok", min_value=0, value=100, help="Hanya produk dengan stok kurang dari nilai ini")
+
+    terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100, help="Minimal jumlah terjual per bulan")
+    harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0, help="Produk dengan harga di atas nilai ini")
+    komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0, help="Komisi afiliasi minimum (%)")
+    komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0, help="Komisi afiliasi minimum (Rp)")
+    jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=0, help="Minimal jumlah live listing")
+    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=100, help="Maksimal jumlah live listing")
 
     # Upload hanya file .txt
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
@@ -96,6 +101,7 @@ if option == "Filter Produk Extension Xyra":
     def apply_filters(df):
         return df[
             (df['Stock'] >= stok_min) &
+            (df['Stock'] <= stok_max) &
             (df['Terjual(Bulanan)'] >= terjual_min) &
             (df['Harga'] >= harga_min) &
             (df['Komisi(%)'] >= komisi_persen_min) &
@@ -105,8 +111,8 @@ if option == "Filter Produk Extension Xyra":
         ]
 
     if uploaded_files:
-        custom_filename = st.text_input("Masukkan Nama File ( Download )", value="data_produk")
-        custom_filename_sampah = st.text_input("Masukkan Nama File Sampah ( Opsional )", value="sampah")
+        custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_produk")
+        custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="sampah")
 
         if st.button("🚀 Proses Data"):
             with st.spinner("⏳ Memproses data..."):
@@ -169,19 +175,19 @@ elif option == "Filter Produk Shoptik":
 
     # Sidebar filter tambahan
     st.sidebar.title("⚙️ Filter Shoptik")
-    trend_percentage_min = st.sidebar.number_input("Tren minimum (%)", min_value=0.0, value=50.0)
-    harga_min_shoptik = st.sidebar.number_input("Harga minimum", min_value=0.0, value=0.0)
-    penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=100)
-    stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=10)
-    rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
+    trend_percentage_min = st.sidebar.number_input("Tren minimum (%)", min_value=0.0, value=50.0, help="Minimum tren persentase")
+    harga_min_shoptik = st.sidebar.number_input("Harga minimum", min_value=0.0, value=0.0, help="Harga produk minimum")
+    penjualan_30_hari_min = st.sidebar.number_input("Penjualan minimum (30 Hari)", min_value=0, value=100, help="Penjualan minimum dalam 30 hari")
+    stok_min_shoptik = st.sidebar.number_input("Minimal stok", min_value=0, value=10, help="Minimal stok produk")
+    rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1, help="Rating minimum produk")
     is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False)
 
     # Upload hanya file .csv
     uploaded_files = st.file_uploader("Masukkan File", type=["csv"], accept_multiple_files=True)
 
     if uploaded_files:
-        custom_filename = st.text_input("Masukkan Nama File ( Download )", value="data_shoptik")
-        custom_filename_sampah = st.text_input("Masukkan Nama File Sampah ( Opsional )", value="sampah_shoptik")
+        custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_shoptik")
+        custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="sampah_shoptik")
 
         if st.button("🔎 Analisis Data"):
             with st.spinner("⏳ Menganalisis data Shoptik..."):
