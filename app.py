@@ -105,8 +105,8 @@ if option == "Filter Produk Extension Xyra":
         ]
 
     if uploaded_files:
-        custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_produk")
-        custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="sampah")
+        custom_filename = st.text_input("Masukkan Nama File ( Download )", value="data_produk")
+        custom_filename_sampah = st.text_input("Masukkan Nama File Sampah ( Opsional )", value="sampah")
 
         if st.button("🚀 Proses Data"):
             with st.spinner("⏳ Memproses data..."):
@@ -180,8 +180,8 @@ elif option == "Filter Produk Shoptik":
     uploaded_files = st.file_uploader("Masukkan File", type=["csv"], accept_multiple_files=True)
 
     if uploaded_files:
-        custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_shoptik")
-        custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="sampah_shoptik")
+        custom_filename = st.text_input("Masukkan Nama File ( Download )", value="data_shoptik")
+        custom_filename_sampah = st.text_input("Masukkan Nama File Sampah ( Opsional )", value="sampah_shoptik")
 
         if st.button("🔎 Analisis Data"):
             with st.spinner("⏳ Menganalisis data Shoptik..."):
