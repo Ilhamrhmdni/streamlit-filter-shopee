@@ -1,13 +1,17 @@
 import streamlit as st
 import pandas as pd
 import io
+import re
 
 # === SET PAGE CONFIG ===
 st.set_page_config(page_title="Filter Produk Shopee", layout="wide")
 
 # === PANGGIL CSS ===
-with open("style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+try:
+    with open("style.css") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+except FileNotFoundError:
+    st.warning("File style.css tidak ditemukan. Styling mungkin tidak berjalan.")
 
 # === PILIH OPSI ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
@@ -25,6 +29,10 @@ def read_and_validate_file(uploaded_file, delimiter='\t'):
     except Exception as e:
         st.error(f"Gagal membaca {uploaded_file.name}: {e}")
         return None
+
+def sanitize_filename(name):
+    """Hapus karakter ilegal dari nama file"""
+    return re.sub(r'[\\/*?:"<>|]', '', name)
 
 # === FUNGSI PREPROCESSING SHOPTIK ===
 def preprocess_shoptik(df):
@@ -46,7 +54,7 @@ def preprocess_shoptik(df):
     return df
 
 # === FUNGSI APPLY FILTER SHOPTIK ===
-def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan_30_hari_min, stok_min_shoptik, rating_min):
+def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan_30_hari_min, stok_min_shoptik, rating_min, is_ad):
     filtered_df = df[
         (df['trendPercentage'] >= trend_percentage_min) &
         (df['Harga'] >= harga_min_shoptik) &
@@ -69,9 +77,9 @@ if option == "Filter Produk Extension Xyra":
     terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100)
     harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0)
     komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0)
-    komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0)
+    komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=800.0)
     jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=0)
-    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=100)
+    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=0)
 
     # Upload hanya file .txt
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
@@ -137,7 +145,7 @@ if option == "Filter Produk Extension Xyra":
                     st.download_button(
                         "⬇️ Download Data Produk",
                         filtered_df.to_csv(index=False).encode('utf-8'),
-                        file_name=f"{custom_filename}.csv",
+                        file_name=f"{sanitize_filename(custom_filename)}.csv",
                         mime='text/csv'
                     )
 
@@ -146,7 +154,7 @@ if option == "Filter Produk Extension Xyra":
                     st.download_button(
                         "⬇️ Download Sampah",
                         removed_df.to_csv(index=False).encode('utf-8'),
-                        file_name=f"{custom_filename_sampah}.csv",
+                        file_name=f"{sanitize_filename(custom_filename_sampah)}.csv",
                         mime='text/csv'
                     )
                 else:
@@ -193,7 +201,8 @@ elif option == "Filter Produk Shoptik":
                         harga_min_shoptik,
                         penjualan_30_hari_min,
                         stok_min_shoptik,
-                        rating_min
+                        rating_min,
+                        is_ad
                     )
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
@@ -221,7 +230,7 @@ elif option == "Filter Produk Shoptik":
                     st.download_button(
                         "⬇️ Download Data Shoptik",
                         filtered_df.to_csv(index=False).encode('utf-8'),
-                        file_name=f"{custom_filename}.csv",
+                        file_name=f"{sanitize_filename(custom_filename)}.csv",
                         mime='text/csv'
                     )
 
@@ -230,7 +239,7 @@ elif option == "Filter Produk Shoptik":
                     st.download_button(
                         "⬇️ Download Sampah",
                         removed_df.to_csv(index=False).encode('utf-8'),
-                        file_name=f"{custom_filename_sampah}.csv",
+                        file_name=f"{sanitize_filename(custom_filename_sampah)}.csv",
                         mime='text/csv'
                     )
                 else:
