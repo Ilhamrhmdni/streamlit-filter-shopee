@@ -79,9 +79,12 @@ if option == "Filter Produk Extension Xyra":
                                                help="Produk dengan komisi kurang dari persentase ini tidak akan diproses")
     komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0,
                                            help="Produk dengan komisi kurang dari nilai ini tidak akan diproses")
-    jumlah_live_min = st.sidebar.number_input("Batas minimal jumlah live", min_value=0, value=0,
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+    jumlah_live_min = st.number_input("Batas minimal jumlah live", min_value=0, value=0,
                                              help="Minimum jumlah live listing untuk produk")
-    jumlah_live_max = st.sidebar.number_input("Batas maksimal jumlah live", min_value=0, value=100,
+    with col2:
+    jumlah_live_max = st.number_input("Batas maksimal jumlah live", min_value=0, value=100,
                                              help="Maksimum jumlah live listing untuk produk")
 
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
