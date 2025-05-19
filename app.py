@@ -152,9 +152,9 @@ if option == "Filter Produk Extension Xyra":
     def apply_filters(df):
         return df[
             (df['Stock'] >= stok_min) &
-            (df['Terjual(Bulanan)'] >= terjual_min) &
-            (df['Terjual(Bulanan)'] >= terjual_max) &
             (df['Harga'] >= harga_min) &
+            (df['Terjual(Bulanan)'] >= terjual_min) &
+            (df['Terjual(Bulanan)'] <= terjual_max) &
             (df['Komisi(%)'] >= komisi_persen_min) &
             (df['Komisi(%)'] <= komisi_persen_max) &
             (df['Komisi(Rp)'] >= komisi_rp_min) &
