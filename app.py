@@ -66,7 +66,6 @@ def apply_shoptik_filters(df, trend_percentage_min, harga_min_shoptik, penjualan
 if option == "Filter Produk Extension Xyra":
     st.title("🛒 Filter Produk Extension Xyra")
     st.markdown("Hanya Support File Export Extensi Xyra v4.2.")
-
     # Input filter
     st.sidebar.title("🚬 Filter Black")
     stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10,
@@ -79,7 +78,6 @@ if option == "Filter Produk Extension Xyra":
                                                help="Produk dengan komisi kurang dari persentase ini tidak akan diproses")
     komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0,
                                            help="Produk dengan komisi kurang dari nilai ini tidak akan diproses")
-
     # Filter Jumlah Live Min & Max dalam kolom
     col1, col2 = st.sidebar.columns(2)
     with col1:
@@ -96,7 +94,9 @@ if option == "Filter Produk Extension Xyra":
             value=0,
             help="Maksimum jumlah live listing untuk produk"
         )
-
+    # Checkbox untuk pengacakan urutan produk
+    shuffle_products = st.sidebar.checkbox("acak urutan produk", value=False, 
+                                           help="Centang jika Anda ingin mengacak urutan produk sebelum download.")
     # Upload hanya file .txt
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
     def preprocess_data(df):
@@ -107,7 +107,6 @@ if option == "Filter Produk Extension Xyra":
         df['Komisi(Rp)'] = pd.to_numeric(df['Komisi(Rp)'].astype(str), errors='coerce').fillna(0)
         df['Jumlah Live'] = pd.to_numeric(df['Jumlah Live'].astype(str), errors='coerce').fillna(0)
         return df
-
     def apply_filters(df):
         return df[
             (df['Stock'] >= stok_min) &
@@ -118,11 +117,9 @@ if option == "Filter Produk Extension Xyra":
             (df['Jumlah Live'] >= jumlah_live_min) &
             (df['Jumlah Live'] <= jumlah_live_max)
         ]
-
     if uploaded_files:
         custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_produk")
         custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="sampah")
-
         if st.button("🚀 Proses Data"):
             with st.spinner("⏳ Memproses data..."):
                 combined_df = pd.DataFrame()
@@ -137,11 +134,14 @@ if option == "Filter Produk Extension Xyra":
                     combined_df = preprocess_data(combined_df)
                     filtered_df = apply_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-
+                    
+                    # Pengacakan urutan produk
+                    if shuffle_products:
+                        filtered_df = filtered_df.sample(frac=1).reset_index(drop=True)
+                        removed_df = removed_df.sample(frac=1).reset_index(drop=True)
+                    
                     avg_live = round(filtered_df['Jumlah Live'].mean(), 1) if not filtered_df.empty else 0
-
                     st.success("✅ Data berhasil diproses!")
-
                     st.markdown(f"""
                     <div class="stat-box">
                         <div class="section-title">📊 Statistik</div>
@@ -155,7 +155,6 @@ if option == "Filter Produk Extension Xyra":
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
-
                     st.subheader("✅ Final Produk")
                     st.dataframe(filtered_df)
                     st.download_button(
@@ -164,7 +163,6 @@ if option == "Filter Produk Extension Xyra":
                         file_name=f"{sanitize_filename(custom_filename)}.csv",
                         mime='text/csv'
                     )
-
                     st.subheader("🗑️ Produk Sampah")
                     st.dataframe(removed_df)
                     st.download_button(
@@ -182,7 +180,6 @@ if option == "Filter Produk Extension Xyra":
 elif option == "Filter Produk Shoptik":
     st.title("📱 Filter Produk Shoptik")
     st.markdown("Gunakan filter di bawah ini untuk menganalisis produk dari Shoptik.")
-
     # Sidebar filter tambahan
     st.sidebar.title("⚙️ Filter Shoptik")
     trend_percentage_min = st.sidebar.number_input("Tren minimum (%)", min_value=0.0, value=50.0,
@@ -196,13 +193,13 @@ elif option == "Filter Produk Shoptik":
     rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1,
                                    help="Rating minimum produk")
     is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False)
-
+    # Checkbox untuk pengacakan urutan produk
+    shuffle_products = st.sidebar.checkbox("acak urutan produk", value=False, 
+                                           help="Centang jika Anda ingin mengacak urutan produk sebelum download.")
     uploaded_files = st.file_uploader("Masukkan File", type=["csv"], accept_multiple_files=True)
-
     if uploaded_files:
         custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_shoptik")
         custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="sampah_shoptik")
-
         if st.button("🔎 Analisis Data"):
             with st.spinner("⏳ Menganalisis data Shoptik..."):
                 combined_df = pd.DataFrame()
@@ -225,10 +222,14 @@ elif option == "Filter Produk Shoptik":
                         is_ad
                     )
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-
+                    
+                    # Pengacakan urutan produk
+                    if shuffle_products:
+                        filtered_df = filtered_df.sample(frac=1).reset_index(drop=True)
+                        removed_df = removed_df.sample(frac=1).reset_index(drop=True)
+                    
                     avg_rating = round(filtered_df['Peringkat'].mean(), 1) if not filtered_df.empty else 0
                     avg_trend = round(filtered_df['trendPercentage'].mean(), 1) if not filtered_df.empty else 0
-
                     st.success("✅ Analisis selesai!")
                     st.markdown(f"""
                     <div class="stat-box">
@@ -244,7 +245,6 @@ elif option == "Filter Produk Shoptik":
                         </ul>
                     </div>
                     """, unsafe_allow_html=True)
-
                     st.subheader("✅ Produk Lolos Filter")
                     st.dataframe(filtered_df)
                     st.download_button(
@@ -253,7 +253,6 @@ elif option == "Filter Produk Shoptik":
                         file_name=f"{sanitize_filename(custom_filename)}.csv",
                         mime='text/csv'
                     )
-
                     st.subheader("🗑️ Produk Dihapus")
                     st.dataframe(removed_df)
                     st.download_button(
