@@ -70,14 +70,56 @@ if option == "Filter Produk Extension Xyra":
     st.sidebar.title("🚬 Filter Black")
     stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10,
                                        help="Produk dengan stok kurang dari nilai ini akan diabaikan")
-    terjual_min = st.sidebar.number_input("Batas minimal terjual per bulan", min_value=0, value=100,
-                                         help="Produk dengan penjualan bulanan kurang dari nilai ini tidak akan diproses")
+     # Filter Batas minimal terjual per bulan Min & Max dalam kolom
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        terjual_min = st.number_input(
+            "Batas minimal terjual per bulan", 
+            min_value=0, 
+            value=5,
+            help="Produk dengan penjualan bulanan kurang dari nilai ini tidak akan diproses"
+        )
+    with col2:
+        terjual_max = st.number_input(
+            "Batas maximal terjual per bulan", 
+            min_value=0, 
+            value=100,
+            help="Produk dengan penjualan bulanan lebih dari nilai ini tidak akan diproses"
+        )
     harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0,
                                        help="Hanya produk di atas harga ini yang akan diproses")
-    komisi_persen_min = st.sidebar.number_input("Batas minimal komisi (%)", min_value=0.0, value=0.0,
-                                               help="Produk dengan komisi kurang dari persentase ini tidak akan diproses")
-    komisi_rp_min = st.sidebar.number_input("Batas minimal komisi (Rp)", min_value=0.0, value=500.0,
-                                           help="Produk dengan komisi kurang dari nilai ini tidak akan diproses")
+    # Filter Batas minimal komisi (%) Min & Max dalam kolom
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        komisi_persen_min = st.number_input(
+            "Batas minimal komisi (%)", 
+            min_value=0.0, 
+            value=0.0,
+            help="Produk dengan komisi kurang dari persentase ini tidak akan diproses"
+        )
+    with col2:
+        komisi_persen_max = st.number_input(
+            "Batas maximal komisi (%)", 
+            min_value=0.0, 
+            value=8.0,
+            help="Produk dengan komisi lebih dari persentase ini tidak akan diproses"
+        )
+    # Filter Batas minimal komisi (Rp) Min & Max dalam kolom
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        komisi_rp_min = st.number_input(
+            "Batas minimal komisi (Rp)", 
+            min_value=0.0,
+            value=500.0,
+            help="Produk dengan komisi kurang dari nilai ini tidak akan diproses"
+        )
+    with col2:
+        komisi_rp_max = st.number_input(
+            "Batas maximal komisi (Rp)", 
+            min_value=0.0,
+            value=5000.0,
+            help="Produk dengan komisi lebih dari nilai ini tidak akan diproses"
+        )
     # Filter Jumlah Live Min & Max dalam kolom
     col1, col2 = st.sidebar.columns(2)
     with col1:
@@ -111,9 +153,12 @@ if option == "Filter Produk Extension Xyra":
         return df[
             (df['Stock'] >= stok_min) &
             (df['Terjual(Bulanan)'] >= terjual_min) &
+            (df['Terjual(Bulanan)'] >= terjual_max) &
             (df['Harga'] >= harga_min) &
             (df['Komisi(%)'] >= komisi_persen_min) &
+            (df['Komisi(%)'] >= komisi_persen_max) &
             (df['Komisi(Rp)'] >= komisi_rp_min) &
+            (df['Komisi(Rp)'] >= komisi_rp_max) &
             (df['Jumlah Live'] >= jumlah_live_min) &
             (df['Jumlah Live'] <= jumlah_live_max)
         ]
