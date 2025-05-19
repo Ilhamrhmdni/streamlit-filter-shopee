@@ -76,14 +76,14 @@ if option == "Filter Produk Extension Xyra":
     col1, col2 = st.sidebar.columns(2)
     with col1:
         terjual_min = st.number_input(
-            "Batas minimal terjual per bulan", 
+            "Min terjual per bulan", 
             min_value=0, 
             value=5,
             help="Produk dengan penjualan bulanan kurang dari nilai ini tidak akan diproses"
         )
     with col2:
         terjual_max = st.number_input(
-            "Batas maximal terjual per bulan", 
+            "Min terjual per bulan", 
             min_value=0, 
             value=100,
             help="Produk dengan penjualan bulanan lebih dari nilai ini tidak akan diproses"
@@ -92,14 +92,14 @@ if option == "Filter Produk Extension Xyra":
     col1, col2 = st.sidebar.columns(2)
     with col1:
         komisi_persen_min = st.number_input(
-            "Batas minimal komisi (%)", 
+            "Min komisi (%)", 
             min_value=0.0, 
             value=0.0,
             help="Produk dengan komisi kurang dari persentase ini tidak akan diproses"
         )
     with col2:
         komisi_persen_max = st.number_input(
-            "Batas maximal komisi (%)", 
+            "Max komisi (%)", 
             min_value=0.0, 
             value=8.0,
             help="Produk dengan komisi lebih dari persentase ini tidak akan diproses"
@@ -108,14 +108,14 @@ if option == "Filter Produk Extension Xyra":
     col1, col2 = st.sidebar.columns(2)
     with col1:
         komisi_rp_min = st.number_input(
-            "Batas minimal komisi (Rp)", 
+            "Min komisi (Rp)", 
             min_value=0.0,
             value=500.0,
             help="Produk dengan komisi kurang dari nilai ini tidak akan diproses"
         )
     with col2:
         komisi_rp_max = st.number_input(
-            "Batas maximal komisi (Rp)", 
+            "Max komisi (Rp)", 
             min_value=0.0,
             value=5000.0,
             help="Produk dengan komisi lebih dari nilai ini tidak akan diproses"
@@ -124,14 +124,14 @@ if option == "Filter Produk Extension Xyra":
     col1, col2 = st.sidebar.columns(2)
     with col1:
         jumlah_live_min = st.number_input(
-            "Batas minimal jumlah live",
+            "Min jumlah live",
             min_value=0,
             value=0,
             help="Minimum jumlah live listing untuk produk"
         )
     with col2:
         jumlah_live_max = st.number_input(
-            "Batas maksimal jumlah live",
+            "Max jumlah live",
             min_value=0,
             value=0,
             help="Maksimum jumlah live listing untuk produk"
