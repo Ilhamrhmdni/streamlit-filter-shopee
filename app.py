@@ -156,9 +156,9 @@ if option == "Filter Produk Extension Xyra":
             (df['Terjual(Bulanan)'] >= terjual_max) &
             (df['Harga'] >= harga_min) &
             (df['Komisi(%)'] >= komisi_persen_min) &
-            (df['Komisi(%)'] >= komisi_persen_max) &
+            (df['Komisi(%)'] <= komisi_persen_max) &
             (df['Komisi(Rp)'] >= komisi_rp_min) &
-            (df['Komisi(Rp)'] >= komisi_rp_max) &
+            (df['Komisi(Rp)'] <= komisi_rp_max) &
             (df['Jumlah Live'] >= jumlah_live_min) &
             (df['Jumlah Live'] <= jumlah_live_max)
         ]
