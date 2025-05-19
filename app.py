@@ -137,7 +137,7 @@ if option == "Filter Produk Extension Xyra":
             help="Maksimum jumlah live listing untuk produk"
         )
     # Checkbox untuk pengacakan urutan produk
-    shuffle_products = st.sidebar.checkbox("acak urutan produk", value=False, 
+    shuffle_products = st.sidebar.checkbox("Acak produk", value=False, 
                                            help="Centang maka produk anda akan morat-morat.")
     # Upload hanya file .txt
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
