@@ -138,7 +138,7 @@ if option == "Filter Produk Extension Xyra":
         )
     # Checkbox untuk pengacakan urutan produk
     shuffle_products = st.sidebar.checkbox("acak urutan produk", value=False, 
-                                           help="Centang jika Anda ingin mengacak urutan produk sebelum download.")
+                                           help="Centang maka produk anda akan morat-morat.")
     # Upload hanya file .txt
     uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
     def preprocess_data(df):
@@ -237,10 +237,10 @@ elif option == "Filter Produk Shoptik":
                                              help="Produk dengan stok di bawah nilai ini tidak lolos")
     rating_min = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1,
                                    help="Rating minimum produk")
-    is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False)
-    # Checkbox untuk pengacakan urutan produk
-    shuffle_products = st.sidebar.checkbox("acak urutan produk", value=False, 
-                                           help="Centang jika Anda ingin mengacak urutan produk sebelum download.")
+    is_ad = st.sidebar.checkbox("Tampilkan hanya produk beriklan", value=False,
+                                help="Selain produk ber add tidak akan di proses")
+    shuffle_products = st.sidebar.checkbox("Acak produk", value=False, 
+                                           help="Centang maka produk anda akan morat-morat.")
     uploaded_files = st.file_uploader("Masukkan File", type=["csv"], accept_multiple_files=True)
     if uploaded_files:
         custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="data_shoptik")
