@@ -70,6 +70,8 @@ if option == "Filter Produk Extension Xyra":
     st.sidebar.title("🚬 Filter Black")
     stok_min = st.sidebar.number_input("Batas minimal stok", min_value=0, value=10,
                                        help="Produk dengan stok kurang dari nilai ini akan diabaikan")
+    harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0,
+                                       help="Hanya produk di atas harga ini yang akan diproses")
      # Filter Batas minimal terjual per bulan Min & Max dalam kolom
     col1, col2 = st.sidebar.columns(2)
     with col1:
@@ -86,8 +88,6 @@ if option == "Filter Produk Extension Xyra":
             value=100,
             help="Produk dengan penjualan bulanan lebih dari nilai ini tidak akan diproses"
         )
-    harga_min = st.sidebar.number_input("Batas minimal harga produk", min_value=0.0, value=0.0,
-                                       help="Hanya produk di atas harga ini yang akan diproses")
     # Filter Batas minimal komisi (%) Min & Max dalam kolom
     col1, col2 = st.sidebar.columns(2)
     with col1:
