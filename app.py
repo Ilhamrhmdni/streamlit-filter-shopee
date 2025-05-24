@@ -308,7 +308,7 @@ elif option == "Filter Produk Shoptik":
     else:
         st.info("📁 Silakan upload file")
         
-# === OPSI 3: FILTER PRODUK SHOPTIK ===
+# === OPSI 3: FILTER PRODUK SERVER ===
 elif option == "Filter Produk Server":
     st.title("📦 Filter Produk Server")
     st.markdown("Upload file produk")
@@ -322,7 +322,7 @@ elif option == "Filter Produk Server":
     lokasi_khusus = st.sidebar.text_input("Lokasi toko (opsional)", help="Contoh: JAKARTA")
     shuffle_products = st.sidebar.checkbox("Acak urutan produk", value=False)
 
-    uploaded_files = st.file_uploader("Unggah File CSV / TXT", type=["csv", "txt"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
 
     def check_required_columns(df, required_cols):
         missing_cols = [col for col in required_cols if col not in df.columns]
