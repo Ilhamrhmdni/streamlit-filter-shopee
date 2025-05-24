@@ -16,7 +16,8 @@ def sanitize_filename(name):
 # === PILIH OPSI ===
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
     "Filter Produk Extension Xyra", 
-    "Filter Produk Shoptik"
+    "Filter Produk Shoptik",
+    "Filter Produk Server"
 ])
 
 # === FUNGSI UMUM ===
@@ -83,7 +84,7 @@ if option == "Filter Produk Extension Xyra":
         )
     with col2:
         terjual_max = st.number_input(
-            "Min terjual per bulan", 
+            "Max terjual per bulan", 
             min_value=0, 
             value=100,
             help="Produk dengan penjualan bulanan lebih dari nilai ini tidak akan diproses"
@@ -179,12 +180,10 @@ if option == "Filter Produk Extension Xyra":
                     combined_df = preprocess_data(combined_df)
                     filtered_df = apply_filters(combined_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-                    
                     # Pengacakan urutan produk
                     if shuffle_products:
                         filtered_df = filtered_df.sample(frac=1).reset_index(drop=True)
                         removed_df = removed_df.sample(frac=1).reset_index(drop=True)
-                    
                     avg_live = round(filtered_df['Jumlah Live'].mean(), 1) if not filtered_df.empty else 0
                     st.success("✅ Data berhasil diproses!")
                     st.markdown(f"""
@@ -267,12 +266,10 @@ elif option == "Filter Produk Shoptik":
                         is_ad
                     )
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
-                    
                     # Pengacakan urutan produk
                     if shuffle_products:
                         filtered_df = filtered_df.sample(frac=1).reset_index(drop=True)
                         removed_df = removed_df.sample(frac=1).reset_index(drop=True)
-                    
                     avg_rating = round(filtered_df['Peringkat'].mean(), 1) if not filtered_df.empty else 0
                     avg_trend = round(filtered_df['trendPercentage'].mean(), 1) if not filtered_df.empty else 0
                     st.success("✅ Analisis selesai!")
@@ -310,6 +307,109 @@ elif option == "Filter Produk Shoptik":
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
         st.info("📁 Silakan upload file")
+
+# === OPSI 3: FILTER PRODUK SHOPEE TOKO LOKAL ===
+elif option == "Filter Produk Server":
+    st.title("📦 Filter Produk Server - Lokal")
+    st.markdown("Upload file produk dari Shopee dengan format kolom seperti contoh.")
+
+    # Sidebar Filters
+    st.sidebar.title("🛠️ Filter Produk Shopee")
+    harga_min_shopee = st.sidebar.number_input("Harga minimum", min_value=0.0, value=50000.0)
+    stok_min_shopee = st.sidebar.number_input("Stok minimum", min_value=0, value=10)
+    terjual_bulanan_min = st.sidebar.number_input("Terjual Bulanan minimum", min_value=0, value=100)
+    rating_min_shopee = st.sidebar.slider("Rating minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
+    lokasi_khusus = st.sidebar.text_input("Lokasi toko (opsional)", help="Contoh: JAKARTA")
+    shuffle_products = st.sidebar.checkbox("Acak urutan produk", value=False)
+
+    uploaded_files = st.file_uploader("Unggah File CSV / TXT", type=["csv", "txt"], accept_multiple_files=True)
+
+    def preprocess_shopee(df):
+        # Renaming columns jika diperlukan (jika menggunakan header No, Link Produk, dll.)
+        df.columns = ['No', 'Link Produk', 'Nama Produk', 'Harga', 'Stock', 'Terjual Bulanan', 'Terjual Semua', 'Komisi %', 'Komisi Rp', 'Rating', 'Flash Sale', 'Lokasi Toko']
+        
+        # Convert numeric
+        df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^\d.]', '', regex=True), errors='coerce')
+        df['Stock'] = pd.to_numeric(df['Stock'], errors='coerce')
+        df['Terjual Bulanan'] = pd.to_numeric(df['Terjual Bulanan'], errors='coerce')
+        df['Rating'] = pd.to_numeric(df['Rating'], errors='coerce')
+        df['Flash Sale'] = df['Flash Sale'].str.contains('TRUE|True|1', case=False, na=False)
+        return df
+
+    def apply_shopee_filters(df):
+        filtered = df[
+            (df['Harga'] >= harga_min_shopee) &
+            (df['Stock'] >= stok_min_shopee) &
+            (df['Terjual Bulanan'] >= terjual_bulanan_min) &
+            (df['Rating'] >= rating_min_shopee)
+        ]
+        if lokasi_khusus:
+            filtered = filtered[df['Lokasi Toko'].str.contains(lokasi_khusus, case=False, na=False)]
+        return filtered
+
+    if uploaded_files:
+        custom_filename = st.text_input("Masukkan nama file CSV untuk produk lolos filter", value="shopee_lokal_lolos")
+        custom_filename_sampah = st.text_input("Masukkan nama file CSV untuk produk tidak lolos filter", value="shopee_lokal_sampah")
+
+        if st.button("🔎 Proses Data Shopee"):
+            with st.spinner("⏳ Memproses..."):
+                combined_df = pd.DataFrame()
+                for file in uploaded_files:
+                    df = read_and_validate_file(file, delimiter='\t' if file.name.endswith('.txt') else ',')
+                    if df is not None and not df.empty:
+                        combined_df = pd.concat([combined_df, df], ignore_index=True)
+
+                if not combined_df.empty:
+                    total_produk_sebelum = len(combined_df)
+                    combined_df.drop_duplicates(subset=['Link Produk'], keep='first', inplace=True)
+                    deleted_dupes = total_produk_sebelum - len(combined_df)
+
+                    combined_df = preprocess_shopee(combined_df)
+                    filtered_df = apply_shopee_filters(combined_df)
+                    removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
+
+                    if shuffle_products:
+                        filtered_df = filtered_df.sample(frac=1).reset_index(drop=True)
+
+                    avg_harga = round(filtered_df['Harga'].mean(), 2)
+                    avg_rating = round(filtered_df['Rating'].mean(), 1)
+
+                    st.success(f"✅ {len(filtered_df)} produk lolos filter.")
+                    st.markdown(f"""
+                    <div class="stat-box">
+                        <div class="section-title">📊 Statistik</div>
+                        <ul>
+                            <li>Total produk diproses: <strong>{total_produk_sebelum}</strong></li>
+                            <li>Produk unik setelah hapus duplikat: <strong>{len(combined_df)}</strong></li>
+                            <li>Produk lolos filter: <strong>{len(filtered_df)}</strong></li>
+                            <li>Duplikat yang dihapus: <strong>{deleted_dupes}</strong></li>
+                            <li>Rata-rata harga: <strong>Rp{avg_harga:,.0f}</strong></li>
+                            <li>Rata-rata rating: <strong>{avg_rating}</strong></li>
+                        </ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    st.subheader("✅ Produk Lolos Filter")
+                    st.dataframe(filtered_df)
+                    st.download_button(
+                        "⬇️ Download Produk Lolos",
+                        filtered_df.to_csv(index=False).encode('utf-8'),
+                        file_name=f"{sanitize_filename(custom_filename)}.csv",
+                        mime='text/csv'
+                    )
+
+                    st.subheader("🗑️ Produk Tidak Lolos")
+                    st.dataframe(removed_df)
+                    st.download_button(
+                        "⬇️ Download Sampah",
+                        removed_df.to_csv(index=False).encode('utf-8'),
+                        file_name=f"{sanitize_filename(custom_filename_sampah)}.csv",
+                        mime='text/csv'
+                    )
+                else:
+                    st.warning("⚠️ Tidak ada data valid yang dapat diproses.")
+    else:
+        st.info("📁 Silakan upload file produk Shopee.")
 
 # === FOOTER ===
 st.markdown("""
