@@ -307,11 +307,11 @@ elif option == "Filter Produk Shoptik":
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
         st.info("📁 Silakan upload file")
-
-# === OPSI 3: FILTER PRODUK SHOPEE TOKO LOKAL ===
+        
+# === OPSI 3: FILTER PRODUK SHOPTIK ===
 elif option == "Filter Produk Server":
     st.title("📦 Filter Produk Server")
-    st.markdown("Upload file produk dari Shopee dengan format kolom seperti contoh.")
+    st.markdown("Upload file produk")
 
     # Sidebar Filters
     st.sidebar.title("🛠️ Filter Produk Shopee")
@@ -324,16 +324,53 @@ elif option == "Filter Produk Server":
 
     uploaded_files = st.file_uploader("Unggah File CSV / TXT", type=["csv", "txt"], accept_multiple_files=True)
 
+    def check_required_columns(df, required_cols):
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            st.warning(f"⚠️ Kolom berikut tidak ditemukan dalam file: {missing_cols}")
+            return False
+        return True
+
+    def rename_columns_smart(df):
+        rename_map = {
+            'Harga Produk': 'Harga',
+            'Stok Barang': 'Stock',
+            'Penjualan Bulanan': 'Terjual Bulanan',
+            'Rating Toko': 'Rating',
+            'Lokasi': 'Lokasi Toko',
+            'Link': 'Link Produk'
+        }
+        df.rename(columns=rename_map, inplace=True)
+        return df
+
     def preprocess_shopee(df):
-        # Renaming columns jika diperlukan (jika menggunakan header No, Link Produk, dll.)
-        df.columns = ['No', 'Link Produk', 'Nama Produk', 'Harga', 'Stock', 'Terjual Bulanan', 'Terjual Semua', 'Komisi %', 'Komisi Rp', 'Rating', 'Flash Sale', 'Lokasi Toko']
-        
-        # Convert numeric
-        df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^\d.]', '', regex=True), errors='coerce')
-        df['Stock'] = pd.to_numeric(df['Stock'], errors='coerce')
-        df['Terjual Bulanan'] = pd.to_numeric(df['Terjual Bulanan'], errors='coerce')
-        df['Rating'] = pd.to_numeric(df['Rating'], errors='coerce')
-        df['Flash Sale'] = df['Flash Sale'].str.contains('TRUE|True|1', case=False, na=False)
+        required_columns = ['Harga', 'Stock', 'Terjual Bulanan', 'Rating']
+        if lokasi_khusus:
+            required_columns.append('Lokasi Toko')
+
+        # Rename otomatis jika perlu
+        df = rename_columns_smart(df)
+
+        # Cek apakah kolom penting tersedia
+        if not check_required_columns(df, required_columns):
+            return None
+
+        # Bersihkan data pada kolom numerik
+        if 'Harga' in df.columns:
+            df['Harga'] = pd.to_numeric(df['Harga'].astype(str).str.replace(r'[^\d.]', '', regex=True), errors='coerce')
+
+        if 'Stock' in df.columns:
+            df['Stock'] = pd.to_numeric(df['Stock'], errors='coerce')
+
+        if 'Terjual Bulanan' in df.columns:
+            df['Terjual Bulanan'] = pd.to_numeric(df['Terjual Bulanan'], errors='coerce')
+
+        if 'Rating' in df.columns:
+            df['Rating'] = pd.to_numeric(df['Rating'], errors='coerce')
+
+        if 'Flash Sale' in df.columns:
+            df['Flash Sale'] = df['Flash Sale'].str.contains('TRUE|True|1', case=False, na=False)
+
         return df
 
     def apply_shopee_filters(df):
@@ -344,7 +381,8 @@ elif option == "Filter Produk Server":
             (df['Rating'] >= rating_min_shopee)
         ]
         if lokasi_khusus:
-            filtered = filtered[df['Lokasi Toko'].str.contains(lokasi_khusus, case=False, na=False)]
+            if 'Lokasi Toko' in df.columns:
+                filtered = filtered[df['Lokasi Toko'].str.contains(lokasi_khusus, case=False, na=False)]
         return filtered
 
     if uploaded_files:
@@ -355,7 +393,8 @@ elif option == "Filter Produk Server":
             with st.spinner("⏳ Memproses..."):
                 combined_df = pd.DataFrame()
                 for file in uploaded_files:
-                    df = read_and_validate_file(file, delimiter='\t' if file.name.endswith('.txt') else ',')
+                    delimiter = '\t' if file.name.endswith('.txt') else ','
+                    df = read_and_validate_file(file, delimiter=delimiter)
                     if df is not None and not df.empty:
                         combined_df = pd.concat([combined_df, df], ignore_index=True)
 
@@ -364,15 +403,19 @@ elif option == "Filter Produk Server":
                     combined_df.drop_duplicates(subset=['Link Produk'], keep='first', inplace=True)
                     deleted_dupes = total_produk_sebelum - len(combined_df)
 
-                    combined_df = preprocess_shopee(combined_df)
-                    filtered_df = apply_shopee_filters(combined_df)
+                    processed_df = preprocess_shopee(combined_df)
+                    if processed_df is None:
+                        st.error("❌ Gagal memproses data karena kolom penting tidak ditemukan.")
+                        st.stop()
+
+                    filtered_df = apply_shopee_filters(processed_df)
                     removed_df = combined_df[~combined_df.index.isin(filtered_df.index)]
 
                     if shuffle_products:
                         filtered_df = filtered_df.sample(frac=1).reset_index(drop=True)
 
-                    avg_harga = round(filtered_df['Harga'].mean(), 2)
-                    avg_rating = round(filtered_df['Rating'].mean(), 1)
+                    avg_harga = round(filtered_df['Harga'].mean(), 2) if not filtered_df.empty else 0
+                    avg_rating = round(filtered_df['Rating'].mean(), 1) if not filtered_df.empty else 0
 
                     st.success(f"✅ {len(filtered_df)} produk lolos filter.")
                     st.markdown(f"""
