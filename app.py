@@ -310,7 +310,7 @@ elif option == "Filter Produk Shoptik":
 
 # === OPSI 3: FILTER PRODUK SHOPEE TOKO LOKAL ===
 elif option == "Filter Produk Server":
-    st.title("📦 Filter Produk Server - Lokal")
+    st.title("📦 Filter Produk Server")
     st.markdown("Upload file produk dari Shopee dengan format kolom seperti contoh.")
 
     # Sidebar Filters
