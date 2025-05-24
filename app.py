@@ -4,11 +4,14 @@ import io
 import re
 
 # === SET PAGE CONFIG ===
-st.set_page_config(page_title="Filter Produk Shopee", layout="wide")
+st.set_page_config(page_title="Filter Produk", layout="wide")
 
 # === PANGGIL CSS ===
-with open("style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+try:
+    with open("style.css") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+except FileNotFoundError:
+    pass  # Jika tidak ada style.css, lanjutkan
 
 def sanitize_filename(name):
     return re.sub(r'[\\/*?:"<>|]', '', name)
@@ -17,7 +20,7 @@ def sanitize_filename(name):
 option = st.sidebar.selectbox("🎯 Pilih Mode Aplikasi", [
     "Filter Produk Extension Xyra", 
     "Filter Produk Shoptik",
-    "Filter Produk Server"
+    "Filter Produk Shopee Toko Lokal"
 ])
 
 # === FUNGSI UMUM ===
@@ -307,11 +310,11 @@ elif option == "Filter Produk Shoptik":
                     st.warning("Tidak ada data valid untuk dianalisis.")
     else:
         st.info("📁 Silakan upload file")
-        
-# === OPSI 3: FILTER PRODUK SERVER ===
-elif option == "Filter Produk Server":
-    st.title("📦 Filter Produk Server")
-    st.markdown("Upload file produk")
+
+# === OPSI 3: FILTER PRODUK SHOPEE TOKO LOKAL ===
+elif option == "Filter Produk Shopee Toko Lokal":
+    st.title("📦 Filter Produk Shopee - Toko Lokal")
+    st.markdown("Upload file produk dari Shopee dengan format kolom minimal seperti contoh.")
 
     # Sidebar Filters
     st.sidebar.title("🛠️ Filter Produk Shopee")
@@ -322,7 +325,7 @@ elif option == "Filter Produk Server":
     lokasi_khusus = st.sidebar.text_input("Lokasi toko (opsional)", help="Contoh: JAKARTA")
     shuffle_products = st.sidebar.checkbox("Acak urutan produk", value=False)
 
-    uploaded_files = st.file_uploader("Masukkan File di Sini", type=["txt"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Unggah File CSV / TXT", type=["csv", "txt"], accept_multiple_files=True)
 
     def check_required_columns(df, required_cols):
         missing_cols = [col for col in required_cols if col not in df.columns]
@@ -369,7 +372,7 @@ elif option == "Filter Produk Server":
             df['Rating'] = pd.to_numeric(df['Rating'], errors='coerce')
 
         if 'Flash Sale' in df.columns:
-            df['Flash Sale'] = df['Flash Sale'].str.contains('TRUE|True|1', case=False, na=False)
+            df['Flash Sale'] = df['Flash Sale'].fillna('').astype(str).str.contains('TRUE|True|1', case=False, na=False)
 
         return df
 
@@ -380,9 +383,8 @@ elif option == "Filter Produk Server":
             (df['Terjual Bulanan'] >= terjual_bulanan_min) &
             (df['Rating'] >= rating_min_shopee)
         ]
-        if lokasi_khusus:
-            if 'Lokasi Toko' in df.columns:
-                filtered = filtered[df['Lokasi Toko'].str.contains(lokasi_khusus, case=False, na=False)]
+        if lokasi_khusus and 'Lokasi Toko' in df.columns:
+            filtered = filtered[df['Lokasi Toko'].str.contains(lokasi_khusus, case=False, na=False)]
         return filtered
 
     if uploaded_files:
